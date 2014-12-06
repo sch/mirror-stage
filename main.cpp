@@ -18,10 +18,8 @@ using namespace std;
 #include "filesys.hpp"
 
 /******
-*
-* Global Variables
-*
-******/
+ * Global Variables
+ ******/
 
 int SCREEN_WIDTH = DEFAULT_SCREEN_WIDTH;
 int SCREEN_HEIGHT = DEFAULT_SCREEN_HEIGHT;
@@ -64,28 +62,23 @@ const GLfloat pspeed = 0.015f;    //player speed
 
 /*********
 * Memory Management Code; used in editor
-*
 **********/
 
 int lastroomcountallocated = DEFAULTROOMCOUNT;
 bool allocated = false;
 
-void allocOutlineLists(int NUM)
-{
-    deallocOutlineLists();
-    level.displaylists.roomoutlines = glGenLists(NUM);
-
-    lastroomcountallocated = NUM;
-    allocated = false;
+void allocOutlineLists(int NUM) {
+  deallocOutlineLists();
+  level.displaylists.roomoutlines = glGenLists(NUM);
+  lastroomcountallocated = NUM;
+  allocated = false;
 }
 
-void deallocOutlineLists()
-{
-    if (allocated)
-    {
-        glDeleteLists(level.displaylists.roomoutlines, lastroomcountallocated);
-        allocated = false;
-    }
+void deallocOutlineLists() {
+  if (allocated) {
+    glDeleteLists(level.displaylists.roomoutlines, lastroomcountallocated);
+    allocated = false;
+  }
 }
 
 /*********
@@ -576,30 +569,22 @@ void drawEntity(Entity E, GLfloat a, bool par)
 *
 **********/
 
-bool CanMove(int room, GLfloat x, GLfloat y)
-{
+bool CanMove(int room, GLfloat x, GLfloat y) {
     Room &loc = level.rooms[room];
 
-    for (int i = shapesize[loc.shape] - 1; i >= 0; i--)
-    {
+    for (int i = shapesize[loc.shape] - 1; i >= 0; i--) {
         GLfloat ax = shapes[loc.shape][i][0];
         GLfloat ay = shapes[loc.shape][i][1];
         GLfloat bx = shapes[loc.shape][i + 1][0];
         GLfloat by = shapes[loc.shape][i + 1][1];
 
-        if (segmentsIntersect(0, 0, x, y, ax, ay, bx, by))
-        {
-            if (loc.portal[i])
-            {
-                if (level.levelparams.mirrorexit)
-                {
-                    if (level.playerpos.room == loc.portaltoroom[i] && !loc.portalparity[i] && loc.portaltoedge[i] == i)
-                    {
+        if (segmentsIntersect(0, 0, x, y, ax, ay, bx, by)) {
+            if (loc.portal[i]) {
+                if (level.levelparams.mirrorexit) {
+                    if (level.playerpos.room == loc.portaltoroom[i] && !loc.portalparity[i] && loc.portaltoedge[i] == i) {
                         finishlevel();
                         return false;
-                    }
-                    else if (level.levelparams.timer == 5)                    //can turn off portals for bootcamp levels
-                    {
+                    } else if (level.levelparams.timer == 5)                    //can turn off portals for bootcamp levels {
                         return false;
                     }
                 }
@@ -607,8 +592,7 @@ bool CanMove(int room, GLfloat x, GLfloat y)
                 {
                     level.playerpos.room = loc.portaltoroom[i];
 
-                    if (editmode)
-                    {
+                    if (editmode) {
                         editor.realwallselected = loc.portaltoedge[i];
                     }
 
@@ -620,20 +604,14 @@ bool CanMove(int room, GLfloat x, GLfloat y)
                     GLfloat dx = shapes[newloc.shape][loc.portaltoedge[i] + 1][0];
                     GLfloat dy = shapes[newloc.shape][loc.portaltoedge[i] + 1][1];
 
-                    if (loc.portalparity[i] == 0)
-                    {
+                    if (loc.portalparity[i] == 0) {
                         level.playerpos.par = !level.playerpos.par;
                         level.playerpos.dir = -level.playerpos.dir - angle(dx - cx, dy - cy) - angle(bx - ax, by - ay);
-
-                        level.playerpos.x = cx * (1 - r) + dx * (r);
-                        level.playerpos.y = cy * (1 - r) + dy * (r);
-                    }
-                    else
-                    {
+                    } else {
                         level.playerpos.dir -= angle(dx - cx, dy - cy, bx - ax, by - ay) + Pi;
-                        level.playerpos.x = dx * (1 - r) + cx * (r);
-                        level.playerpos.y = dy * (1 - r) + cy * (r);
                     }
+                    level.playerpos.x = weird_math(dx, cx, r);
+                    level.playerpos.y = weird_math(dy, cy, r);
 
                     level.playerpos.scale *= level.deriveddata.roomratios[room][i];
 
@@ -699,6 +677,10 @@ bool CanMove(int room, GLfloat x, GLfloat y)
         }
     }
     return true;
+}
+
+int weird_math(int d, int c, int r) {
+  return (d * (1 - r)) + (c * r);
 }
 
 
@@ -819,8 +801,7 @@ void RenderRoom(int room_t, int room_f, int edge_t, int edge_f, bool parity, boo
     if (level.entitydata.curEntityPositions[room_t].type != e_EmptyRoom)
         drawEntity(level.entitydata.curEntityPositions[room_t], (level.colourscheme.entitytransparency ? alpha : 1.0f), globparity);
 
-    if ((level.playerpos.room == room_t) && (!level.colourscheme.noplayerdup))
-    {
+    if ((level.playerpos.room == room_t) && (!level.colourscheme.noplayerdup)) {
         c_player[3] = alpha;
         glColor4fv(c_player);
 
@@ -1042,8 +1023,7 @@ void buildLists()
 }
 
 
-bool init_GL()
-{
+bool init_GL() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1060,642 +1040,561 @@ bool init_GL()
     buildLists();
     glClearColor(0, 0, 0, 1);
 
-    if (glGetError() != GL_NO_ERROR)
-    {
-        return false;
-    }
-
-    return true;
+    return (glGetError() != GL_NO_ERROR);
 }
 
 /*********
-* Set up the game
-*
-**********/
+ * Set up the game
+ **********/
 
-bool init()
-{
-    editmode = false;
+bool init() {
+  editmode = false;
 
-    episodeList.clear();
-    customEpisodeList.clear();
+  episodeList.clear();
+  customEpisodeList.clear();
 
-    getEpisodeData();
+  getEpisodeData();
 
-    //Initialize SDL
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-    {
-        return false;
+  //Initialize SDL
+  if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    return false;
+  }
+
+
+  load_config_vars();
+  MAXDEPTH = getmaxdepth();
+  MAXREALDEPTH = getmaxrealdepth();
+  SCREEN_WIDTH = getscreenwidth();
+  SCREEN_HEIGHT = getscreenheight();
+  FULLSCREEN = getfullscreen();
+
+  //should add extra aspect ratio code here at some point...
+
+  SDL_EnableUNICODE(true);
+  SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+
+  if (FULLSCREEN) {
+    //Create Window
+    if (SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_OPENGL | SDL_FULLSCREEN) == NULL) {
+      return false;
     }
-
-
-    load_config_vars();
-    MAXDEPTH = getmaxdepth();
-    MAXREALDEPTH = getmaxrealdepth();
-    SCREEN_WIDTH = getscreenwidth();
-    SCREEN_HEIGHT = getscreenheight();
-    FULLSCREEN = getfullscreen();
-
-    //should add extra aspect ratio code here at some point...
-
-    SDL_EnableUNICODE(true);
-    SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-
-    if (FULLSCREEN)
-    {
-        //Create Window
-        if (SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_OPENGL | SDL_FULLSCREEN) == NULL)
-        {
-            return false;
-        }
+  } else {
+    //Create Window
+    if (SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_OPENGL /* | SDL_FULLSCREEN*/) == NULL) {
+      return false;
     }
-    else
-    {
-        //Create Window
-        if (SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_OPENGL /* | SDL_FULLSCREEN*/) == NULL)
-        {
-            return false;
-        }
-    }
+  }
 
-    SDL_ShowCursor(SDL_DISABLE);
+  SDL_ShowCursor(SDL_DISABLE);
 
-    if (init_GL() == false)
-    {
-        return false;
-    }
+  if (init_GL() == false) {
+    return false;
+  }
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glMatrixMode(GL_MODELVIEW);
 
-    initsound();
+  initsound();
 
-    SDL_WM_SetCaption("Mirror Stage", NULL);
+  SDL_WM_SetCaption("Mirror Stage", NULL);
 
-    generateShapeScales();
+  generateShapeScales();
 
-    loadsavedata();
+  loadsavedata();
 
-    return true;
+  return true;
 }
 
 /*********
-* Called when quitting game
-*
-**********/
+ * Called when quitting game
+ *
+ **********/
 
-void clean_up()
-{
+void clean_up() {
     releasesound();
     SDL_Quit();
 }
 
 /*********
-* The following is used to generate thumbnail images for the rooms;
-* it finds their sizes, so the editor can later scale them down to
-* fit in a small panel
-*
-**********/
+ * The following is used to generate thumbnail images for the rooms;
+ * it finds their sizes, so the editor can later scale them down to
+ * fit in a small panel
+ **********/
 
-void generateShapeScales()
-{
-    for (int i = 0; i < SHAPECOUNT; i++)
-    {
-        roomNormalizations[i] = 0.5;
-
-        for (int j = 0; j < shapesize[i]; j++)
-        {
-            for (int k = 0; k < 2; k++)
-            {
-                if (fabs(shapes[i][j][k]) > roomNormalizations[i])
-                    roomNormalizations[i] = fabs(shapes[i][j][k]);
-            }
+void generateShapeScales() {
+  for (int i = 0; i < SHAPECOUNT; i++) {
+    roomNormalizations[i] = 0.5;
+    for (int j = 0; j < shapesize[i]; j++) {
+      for (int k = 0; k < 2; k++) {
+        if (fabs(shapes[i][j][k]) > roomNormalizations[i]) {
+          roomNormalizations[i] = fabs(shapes[i][j][k]);
         }
+      }
     }
+  }
 }
 
 /*********
-* This calculates the scale-changes between each portal.
-* originally I calculated this dynamically, but given that there's
-* no portal gun, it is neater to calculate it statically.
-*
-**********/
+ * This calculates the scale-changes between each portal.
+ * originally I calculated this dynamically, but given that there's
+ * no portal gun, it is neater to calculate it statically.
+ **********/
 
 
-void buildRoomRatios()
-{
-    for (int r = 0; r < ROOMCOUNT; r++)
-        for (int e = 0; e < SHAPESIZE; e++)
-            if (level.rooms[r].portal[e])
-            {
-                GLfloat ax = shapes[level.rooms[r].shape][e][0];
-                GLfloat ay = shapes[level.rooms[r].shape][e][1];
-                GLfloat bx = shapes[level.rooms[r].shape][e + 1][0];
-                GLfloat by = shapes[level.rooms[r].shape][e + 1][1];
+void buildRoomRatios() {
+  for (int r = 0; r < ROOMCOUNT; r++) {
+    for (int e = 0; e < SHAPESIZE; e++) {
+      if (level.rooms[r].portal[e]) {
+        GLfloat ax = shapes[level.rooms[r].shape][e][0];
+        GLfloat ay = shapes[level.rooms[r].shape][e][1];
+        GLfloat bx = shapes[level.rooms[r].shape][e + 1][0];
+        GLfloat by = shapes[level.rooms[r].shape][e + 1][1];
 
-                int r2 = level.rooms[r].portaltoroom[e];
-                GLfloat cx = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e]][0];
-                GLfloat cy = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e]][1];
-                GLfloat dx = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e] + 1][0];
-                GLfloat dy = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e] + 1][1];
+        int r2 = level.rooms[r].portaltoroom[e];
+        GLfloat cx = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e]][0];
+        GLfloat cy = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e]][1];
+        GLfloat dx = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e] + 1][0];
+        GLfloat dy = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e] + 1][1];
 
-                level.deriveddata.roomratios[r][e] = sqrt(lengthsq(bx - ax, by - ay) / lengthsq(dx - cx, dy - cy));
-            }
-}
-
-
-/*********
-* Counts the number of portals in each room; used
-* in rendering calculations.
-*
-**********/
-
-void countPortals()
-{
-    for (int i = 0; i < ROOMCOUNT; i++)
-    {
-        level.deriveddata.portalcount[i] = 0;
-
-        for (int j = shapesize[level.rooms[i].shape] - 1; j >= 0; j--)
-        {
-            if (level.rooms[i].portal[j])
-                level.deriveddata.portalcount[i]++;
-        }
+        level.deriveddata.roomratios[r][e] = sqrt(lengthsq(bx - ax, by - ay) / lengthsq(dx - cx, dy - cy));
+      }
     }
+  }
 }
 
 /*********
-* Load and initialize level
-*
-**********/
-
-void initlevel()
-{
-    editmode = editorenabled;
-    editor.allowmove=true;
-    editor.prompttodelete=false;
-
-    int l = curlevel;
-    level.playerpos.room = 0;
-
-    editor.realwallselected = 0;
-    editor.newportalparity = true;
-
-    clearsizes();
-
-    char blah[50];
-    if (!customchapter)
-        sprintf(blah, "chapters/%s/%d.dat", curchapter.c_str(), l);
-    else
-        sprintf(blah, "custom/%s/%d.dat", curchapter.c_str(), l);
-    readlevel(blah, level);
-
-    level.playerstate.oldx = level.playerpos.x;
-    level.playerstate.oldy = level.playerpos.y;
-    level.playerstate.rotatingl = false;
-    level.playerstate.rotatingr = false;
-    level.playerstate.movingforward = false;
-    level.playerstate.movingback = false;
-
-    //don't load a new track for text only levels
-    if ((level.levelparams.exploreon ||
-            level.levelparams.enterroom ||
-            level.levelparams.mirrorexit ||
-            level.levelparams.timeron || (level.levelparams.goalroom == -1)))
-        loadtrack(level.levelparams.music);
-
-    resizethings(level.rooms.size());
-
-    /* STANDARD INITIALIZATION CODE BEGIN */
-
-    level.playerstate.movingforward = 0;
-    level.playerstate.movingback = 0;
-    level.playerstate.rotatingl = 0;
-    level.playerstate.rotatingr = 0;
-
-    /* STANDARD INITIALIZATION CODE END */
-
-
-    /* RUNTIME GENERATION BEGIN */
-
-    countPortals();
-
-    for (int i = 0; i < ROOMCOUNT; i++)
-        for (int j = 0; j < 4; j++)
-            for (int k = 0; k < 2; k++)
-                level.deriveddata.visited[i][j][k] = false;
-
-    if (level.levelparams.exploreon)
-    {
-        level.levelparams.scaleandparitymatter = level.levelparams.scalematters && level.levelparams.paritymatters;
-
-        if (level.levelparams.scaleandparitymatter)
-            level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][!level.playerpos.par] = true;
-        else if (level.levelparams.scalematters)
-        {
-            level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][0] = true;
-            level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][1] = true;
-        }
-        else if (level.levelparams.paritymatters)
-        {
-            for (int i = 0; i < 5; i++)
-                level.deriveddata.visited[level.playerpos.room][i][!level.playerpos.par] = true;
-        }
-        else
-        {
-            for (int i = 0; i < 5; i++)
-            {
-                level.deriveddata.visited[level.playerpos.room][i][0] = true;
-                level.deriveddata.visited[level.playerpos.room][i][1] = true;
-            }
-        }
+ * Counts the number of portals in each room; used
+ * in rendering calculations.
+ **********/
+void countPortals() {
+  for (int i = 0; i < ROOMCOUNT; i++) {
+    level.deriveddata.portalcount[i] = 0;
+    for (int j = shapesize[level.rooms[i].shape] - 1; j >= 0; j--) {
+      if (level.rooms[i].portal[j]) {
+        level.deriveddata.portalcount[i]++;
+      }
     }
+  }
+}
 
-    buildRoomRatios();
-    buildOutlines();
+/*****************************
+ * Load and initialize level *
+ *****************************/
+void initlevel() {
+  editmode = editorenabled;
+  editor.allowmove=true;
+  editor.prompttodelete=false;
 
-    /* RUNTIME GENERATION END */
+  int l = curlevel;
+  level.playerpos.room = 0;
 
-    if (!editmode)
-    {
-        glClearColor(0, 0, 0, 1);
-        gamestate = gs_interlude;
+  editor.realwallselected = 0;
+  editor.newportalparity = true;
+
+  clearsizes();
+
+  char blah[50];
+  if (!customchapter) {
+    sprintf(blah, "chapters/%s/%d.dat", curchapter.c_str(), l);
+  } else {
+    sprintf(blah, "custom/%s/%d.dat", curchapter.c_str(), l);
+  }
+  readlevel(blah, level);
+
+  level.playerstate.oldx = level.playerpos.x;
+  level.playerstate.oldy = level.playerpos.y;
+  level.playerstate.rotatingl = false;
+  level.playerstate.rotatingr = false;
+  level.playerstate.movingforward = false;
+  level.playerstate.movingback = false;
+
+  //don't load a new track for text only levels
+  if ((level.levelparams.exploreon ||
+        level.levelparams.enterroom ||
+        level.levelparams.mirrorexit ||
+        level.levelparams.timeron || (level.levelparams.goalroom == -1))
+     ) {
+    loadtrack(level.levelparams.music);
+  }
+
+  resizethings(level.rooms.size());
+
+  /* STANDARD INITIALIZATION CODE BEGIN */
+
+  level.playerstate.movingforward = 0;
+  level.playerstate.movingback = 0;
+  level.playerstate.rotatingl = 0;
+  level.playerstate.rotatingr = 0;
+
+  /* STANDARD INITIALIZATION CODE END */
+
+
+  /* RUNTIME GENERATION BEGIN */
+
+  countPortals();
+
+  for (int i = 0; i < ROOMCOUNT; i++) {
+    for (int j = 0; j < 4; j++) {
+      for (int k = 0; k < 2; k++) {
+        level.deriveddata.visited[i][j][k] = false;
+      }
     }
-    else
-    {
-        glClearColor(level.colourscheme.background[0], level.colourscheme.background[1], level.colourscheme.background[2], 1.0f);
-        gamestate = gs_level;
-    }
+  }
 
+  if (level.levelparams.exploreon) {
+    level.levelparams.scaleandparitymatter = level.levelparams.scalematters && level.levelparams.paritymatters;
+
+    if (level.levelparams.scaleandparitymatter) {
+      level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][!level.playerpos.par] = true;
+    } else if (level.levelparams.scalematters) {
+      level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][0] = true;
+      level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][1] = true;
+    } else if (level.levelparams.paritymatters) {
+      for (int i = 0; i < 5; i++) {
+        level.deriveddata.visited[level.playerpos.room][i][!level.playerpos.par] = true;
+      }
+    } else {
+      for (int i = 0; i < 5; i++) {
+        level.deriveddata.visited[level.playerpos.room][i][0] = true;
+        level.deriveddata.visited[level.playerpos.room][i][1] = true;
+      }
+    }
+  }
+
+  buildRoomRatios();
+  buildOutlines();
+
+  /* RUNTIME GENERATION END */
+
+  if (!editmode) {
+    glClearColor(0, 0, 0, 1);
+    gamestate = gs_interlude;
+  } else {
+    glClearColor(level.colourscheme.background[0], level.colourscheme.background[1], level.colourscheme.background[2], 1.0f);
+    gamestate = gs_level;
+  }
 }
 
 /*********
 * Restart level
-*
 **********/
 
-void restartlevel()
-{
-    if (!editmode && !firstframe)
-    {
-        fadetoblack();
-        initlevel();
-    }
+void restartlevel() {
+  if (!editmode && !firstframe) {
+    fadetoblack();
+    initlevel();
+  }
 }
 
 /*********
-* Finish level
-*
-**********/
+ * Finish level
+ **********/
 
-void finishlevel()
-{
-    if (editmode || firstframe || editorenabled)
-        return;
+void finishlevel() {
+  if (editmode || firstframe || editorenabled) return;
 
-    if (curlevel < (episodecount - 1))
-    {
-        if (!customchapter)
-        {
-            if (savedata.completed[curtitleselection2][curlevel] != 1)
-            {
-                savedata.completed[curtitleselection2][curlevel] = 1;
-                savesavedata();
-            }
-        }
+  int current_level_save_status = savedata.completed[curtitleselection2][curlevel];
+  bool has_more_levels = curlevel < (episodecount - 1);
+  bool level_not_yet_completed = current_level_save_status != 1;
 
-        curlevel++;
-        fadetoblack();
-        initlevel();
-    }
-    else
-    {
-        if (!customchapter)
-        {
-            if (savedata.completed[curtitleselection2][curlevel] != 1)
-            {
-                savedata.completed[curtitleselection2][curlevel] = 1;
-                savesavedata();
-            }
-        }
+  if (!customchapter && level_not_yet_completed) {
+    current_level_save_status = 1;
+    savesavedata();
+  }
 
-        fadetoblack();
-        wantquit = true;
-        gamestate = gs_finishchapter;
-    }
+  if (has_more_levels) {
+    curlevel++;
+    fadetoblack();
+    initlevel();
+  } else {
+    fadetoblack();
+    wantquit = true;
+    gamestate = gs_finishchapter;
+  }
 }
 
 
-void levelinput()
-{
-    //If a key was pressed
-    if (event.type == SDL_KEYDOWN)
-    {
-        //Adjust the velocity
-        switch (event.key.keysym.sym)
-        {
-        case SDLK_UP:
-            level.playerstate.movingforward = 1;
+void levelinput() {
+  //If a key was pressed
+  if (event.type == SDL_KEYDOWN) {
+    //Adjust the velocity
+    switch (event.key.keysym.sym) {
+      case SDLK_UP:
+        level.playerstate.movingforward = 1;
+        break;
+
+      case SDLK_DOWN:
+        level.playerstate.movingback = 1;
+        break;
+
+      case SDLK_LEFT:
+        level.playerstate.rotatingl = 1;
+        break;
+
+      case SDLK_RIGHT:
+        level.playerstate.rotatingr = 1;
+        break;
+
+        // TODO: make esc go from level to level select to title to exit...
+      case SDLK_SPACE:
+      case SDLK_RETURN:
+        editor.input(' ');
+        break;
+
+      case SDLK_q:
+        editor.input('q');
+        break;
+
+      case SDLK_w:
+        editor.input('w');
+        break;
+
+      case SDLK_e:
+        editor.input('e');
+        break;
+
+      case SDLK_a:
+        editor.input('a');
+        break;
+
+      case SDLK_s:
+        editor.input('s');
+        break;
+
+      case SDLK_d:
+        editor.input('d');
+        break;
+
+      case SDLK_z:
+        editor.input('z');
+        break;
+
+      case SDLK_c:
+        editor.input('c');
+        break;
+
+      case SDLK_r:
+        editor.input('r');
+        break;
+
+      case SDLK_f:
+        editor.input('f');
+        break;
+
+      case SDLK_v:
+        editor.input('v');
+        break;
+
+      case SDLK_t:
+        editor.input('t');
+        break;
+
+      case SDLK_x:
+        editor.input('x');
+        break;
+
+      case SDLK_LEFTBRACKET:
+        editor.input('[');
+        break;
+
+      case SDLK_RIGHTBRACKET:
+        editor.input(']');
+        break;
+
+      case SDLK_F1:
+        editor.setPage(E_FileStuff);
+        break;
+
+      case SDLK_F2:
+        editor.setPage(E_ColourScheme);
+        break;
+
+      case SDLK_F3:
+        editor.setPage(E_LevelGoals);
+        break;
+
+      case SDLK_F4:
+        editor.setPage(E_EntityChooser);
+        break;
+
+      case SDLK_F5:
+        editor.setPage(E_TextChooser);
+        break;
+
+      case SDLK_F6:
+        editor.setPage(E_RoomAdder);
+        break;
+
+      case SDLK_F7:
+        editor.setPage(E_PortalMode);
+        break;
+
+      case SDLK_F8:
+        editor.setPage(E_Other);
+        break;
+
+      case SDLK_1:
+        if (editmode) {
+          if (editor.page == E_TextChooser) {
             break;
+          }
 
-        case SDLK_DOWN:
-            level.playerstate.movingback = 1;
-            break;
-
-        case SDLK_LEFT:
-            level.playerstate.rotatingl = 1;
-            break;
-
-        case SDLK_RIGHT:
-            level.playerstate.rotatingr = 1;
-            break;
-
-            // TODO: make esc go from level to level select to title to exit...
-        case SDLK_SPACE:
-        case SDLK_RETURN:
-            editor.input(' ');
-            break;
-
-        case SDLK_q:
-            editor.input('q');
-            break;
-
-        case SDLK_w:
-            editor.input('w');
-            break;
-
-        case SDLK_e:
-            editor.input('e');
-            break;
-
-        case SDLK_a:
-            editor.input('a');
-            break;
-
-        case SDLK_s:
-            editor.input('s');
-            break;
-
-        case SDLK_d:
-            editor.input('d');
-            break;
-
-        case SDLK_z:
-            editor.input('z');
-            break;
-
-        case SDLK_c:
-            editor.input('c');
-            break;
-
-        case SDLK_r:
-            editor.input('r');
-            break;
-
-        case SDLK_f:
-            editor.input('f');
-            break;
-
-        case SDLK_v:
-            editor.input('v');
-            break;
-
-        case SDLK_t:
-            editor.input('t');
-            break;
-
-        case SDLK_x:
-            editor.input('x');
-            break;
-
-        case SDLK_LEFTBRACKET:
-            editor.input('[');
-            break;
-
-        case SDLK_RIGHTBRACKET:
-            editor.input(']');
-            break;
-
-        case SDLK_F1:
-            editor.setPage(E_FileStuff);
-            break;
-
-        case SDLK_F2:
-            editor.setPage(E_ColourScheme);
-            break;
-
-        case SDLK_F3:
-            editor.setPage(E_LevelGoals);
-            break;
-
-        case SDLK_F4:
-            editor.setPage(E_EntityChooser);
-            break;
-
-        case SDLK_F5:
-            editor.setPage(E_TextChooser);
-            break;
-
-        case SDLK_F6:
-            editor.setPage(E_RoomAdder);
-            break;
-
-        case SDLK_F7:
-            editor.setPage(E_PortalMode);
-            break;
-
-        case SDLK_F8:
-            editor.setPage(E_Other);
-            break;
-
-        case SDLK_1:
-            if (editmode)
-            {
-                if (editor.page == E_TextChooser)
-                    break;
-
-                curlevel = (curlevel - 1 + episodecount) % episodecount;
-                curtitleselection3 = curlevel;
-                initlevel();
-                editor.itemselected = 0;
-            }
-            break;
-
-        case SDLK_2:
-            if (editmode)
-            {
-                if (editor.page == E_TextChooser)
-                    break;
-                curlevel = (curlevel + 1) % episodecount;
-                curtitleselection3 = curlevel;
-                initlevel();
-                editor.itemselected = 0;
-            }
-            break;
-        case SDLK_m:
-            if (editmode)
-            {
-                editor.allowmove=!editor.allowmove;
-            }
-
-        default:
-            break;
-        }
-
-        //deal with text input here as well
-
-        if (editmode && (editor.page == E_TextChooser))
-        {
-            if (event.key.keysym.sym == SDLK_BACKSPACE)
-            {
-                level.introtext = level.introtext.substr(0, level.introtext.length() - 1);
-            }
-            else if (event.key.keysym.sym == SDLK_RETURN)
-            {
-                level.introtext.resize((level.introtext.length() + 16) - ((level.introtext.length() + 16) % 16), ' ');
-            }
-            else if (event.key.keysym.unicode < 0x80 && event.key.keysym.unicode > 0)
-            {
-                char ch = (char)event.key.keysym.unicode;
-                level.introtext.append(1, tolower(ch));
-                if (level.introtext.length() > 176)
-                    level.introtext.resize(176);
-            }
-        }
-    }
-    //If a key was released
-    else if (event.type == SDL_KEYUP)
-    {
-        //Adjust the velocity
-        switch (event.key.keysym.sym)
-        {
-        case SDLK_UP:
-            level.playerstate.movingforward = 0;
-            break;
-
-        case SDLK_DOWN:
-
-            level.playerstate.movingback = 0;
-            break;
-
-        case SDLK_LEFT:
-            level.playerstate.rotatingl = 0;
-            break;
-
-        case SDLK_RIGHT:
-            level.playerstate.rotatingr = 0;
-            break;
-
-        case SDLK_SPACE:
-            //if (!editmode)
-            //{
-            //space does nothing for now; have esc take back to title screen
-
-            /*
-               if (curlevel==0)
-                    initlevel(level.playerpos.room+1);
-               else
-                    initlevel(0);*/
-            //}
-            break;
-
-        case SDLK_TAB:
-        {
-            if (editorenabled)
-            {
-                editmode = !editmode;
-                if (editmode == true)
-                {
-                    editor.realwallselected = 0;
-                }
-            }
+          curlevel = (curlevel - 1 + episodecount) % episodecount;
+          curtitleselection3 = curlevel;
+          initlevel();
+          editor.itemselected = 0;
         }
         break;
 
-        case SDLK_w:
+      case SDLK_2:
+        if (editmode) {
+          if (editor.page == E_TextChooser) {
             break;
-
-        case SDLK_s:
-            break;
-
-        case SDLK_ESCAPE:
-            if (editorenabled)
-            {
-                if (!editmode)
-                    editmode = true;
-                else
-                {
-                    if (editor.page != E_FileStuff)
-                    {
-                        editor.page = E_FileStuff;
-                        editor.itemselected = 1;                                //select "save"
-                    }
-                    else
-                    {
-                        //go to save as screen
-                        wantquit = true;
-                        gamestate = gs_title;
-                    }
-                }
-            }
-            else
-            {
-                fadetoblack(false);
-                wantquit = true;
-                gamestate = gs_title;
-            }
-            break;
-
-        default:
-            break;
+          }
+          curlevel = (curlevel + 1) % episodecount;
+          curtitleselection3 = curlevel;
+          initlevel();
+          editor.itemselected = 0;
         }
+        break;
+      case SDLK_m:
+        if (editmode) {
+          editor.allowmove=!editor.allowmove;
+        }
+
+      default:
+        break;
     }
+
+    //deal with text input here as well
+
+    if (editmode && (editor.page == E_TextChooser)) {
+      if (event.key.keysym.sym == SDLK_BACKSPACE) {
+        level.introtext = level.introtext.substr(0, level.introtext.length() - 1);
+      } else if (event.key.keysym.sym == SDLK_RETURN) {
+        level.introtext.resize((level.introtext.length() + 16) - ((level.introtext.length() + 16) % 16), ' ');
+      } else if (event.key.keysym.unicode < 0x80 && event.key.keysym.unicode > 0) {
+        char ch = (char)event.key.keysym.unicode;
+        level.introtext.append(1, tolower(ch));
+        if (level.introtext.length() > 176) {
+          level.introtext.resize(176);
+        }
+      }
+    }
+  } else if (event.type == SDL_KEYUP) { //If a key was released
+    //Adjust the velocity
+    switch (event.key.keysym.sym) {
+      case SDLK_UP:
+        level.playerstate.movingforward = 0;
+        break;
+
+      case SDLK_DOWN:
+
+        level.playerstate.movingback = 0;
+        break;
+
+      case SDLK_LEFT:
+        level.playerstate.rotatingl = 0;
+        break;
+
+      case SDLK_RIGHT:
+        level.playerstate.rotatingr = 0;
+        break;
+
+      case SDLK_SPACE:
+        //if (!editmode)
+        //{
+        //space does nothing for now; have esc take back to title screen
+
+        /*
+           if (curlevel==0)
+           initlevel(level.playerpos.room+1);
+           else
+           initlevel(0);*/
+        //}
+        break;
+
+      case SDLK_TAB:
+        {
+          if (editorenabled) {
+            editmode = !editmode;
+            if (editmode == true) {
+              editor.realwallselected = 0;
+            }
+          }
+        }
+        break;
+
+      case SDLK_w:
+        break;
+
+      case SDLK_s:
+        break;
+
+      case SDLK_ESCAPE:
+        if (editorenabled) {
+          if (!editmode) {
+            editmode = true;
+          } else {
+            if (editor.page != E_FileStuff) {
+              editor.page = E_FileStuff;
+              editor.itemselected = 1;                                //select "save"
+            } else {
+              //go to save as screen
+              wantquit = true;
+              gamestate = gs_title;
+            }
+          }
+        } else {
+          fadetoblack(false);
+          wantquit = true;
+          gamestate = gs_title;
+        }
+        break;
+
+      default:
+        break;
+    }
+  }
 }
 
 
-void interludeinput()
-{
-    if (event.type == SDL_KEYDOWN)
-    {
-        //Adjust the velocity
-        switch (event.key.keysym.sym)
-        {
-        default:
-            break;
-        }
+void interludeinput() {
+  if (event.type == SDL_KEYDOWN) {
+    //Adjust the velocity
+    switch (event.key.keysym.sym) {
+      default:
+        break;
     }
-    //If a key was released
-    else if (event.type == SDL_KEYUP)
-    {
-        //Adjust the velocity
-        switch (event.key.keysym.sym)
-        {
-        case SDLK_SPACE:
-        case SDLK_RETURN:
-            if (!(level.levelparams.exploreon ||
-                    level.levelparams.enterroom ||
-                    level.levelparams.mirrorexit ||
-                    level.levelparams.timeron || (level.levelparams.goalroom == -1)))
-                finishlevel();
-            else
-            {
-                glClearColor(level.colourscheme.background[0], level.colourscheme.background[1], level.colourscheme.background[2], 1);
-                gamestate = gs_level;
-            }
-            break;
-
-        case SDLK_ESCAPE:
-            wantquit = true;
-            gamestate = gs_title;
-            break;
-
-        default:
-            break;
+  } else if (event.type == SDL_KEYUP) { //If a key was released
+    //Adjust the velocity
+    switch (event.key.keysym.sym) {
+      case SDLK_SPACE:
+      case SDLK_RETURN:
+        if (!(level.levelparams.exploreon ||
+              level.levelparams.enterroom ||
+              level.levelparams.mirrorexit ||
+              level.levelparams.timeron ||
+              level.levelparams.goalroom == -1)) {
+          finishlevel();
+        } else {
+          glClearColor(level.colourscheme.background[0], level.colourscheme.background[1], level.colourscheme.background[2], 1);
+          gamestate = gs_level;
         }
+        break;
+
+      case SDLK_ESCAPE:
+        wantquit = true;
+        gamestate = gs_title;
+        break;
+
+      default:
+        break;
     }
+  }
 }
 
 
@@ -1704,52 +1603,44 @@ void interludeinput()
 *
 **********/
 
-Game::Game()
-{
+Game::Game() {
     gamestate = gs_intro;
 }
 
 void Game::handle_input()
 {
-    if (gamestate == gs_level)
-        levelinput();
-    else
-        interludeinput();
+  if (gamestate == gs_level) {
+    levelinput();
+  } else {
+    interludeinput();
+  }
 }
 
-void Game::move()
-{
-    if (gamestate == gs_level)
-        levelmove();
-    else
-        interludemove();
+void Game::move() {
+  if (gamestate == gs_level) {
+    levelmove();
+  } else {
+    interludemove();
+  }
 }
 
-void Game::show()
-{
-    if (gamestate == gs_level)
-    {
-        levelshow();
-    }
-    else if (!wantquit)
-    {
-        interludeshow();
-    }
+void Game::show() {
+  if (gamestate == gs_level) {
+    levelshow();
+  } else if (!wantquit) {
+    interludeshow();
+  }
 }
 
 /*********
 * Basic movement code put here
-*
 **********/
 
-void levelmove()
-{
-    //these are used for collision-detection
+void levelmove() {
+    // these are used for collision-detection
 
-
-    /*  move player    */
-    if (level.playerstate.movingforward)
-    {
+    // move player
+    if (level.playerstate.movingforward) {
         GLfloat dpx = pspeed * cos(level.playerpos.dir) / level.playerpos.scale;
         GLfloat dpy = pspeed * sin(level.playerpos.dir) / level.playerpos.scale;
         if (CanMove(level.playerpos.room, level.playerpos.x + dpx, level.playerpos.y + dpy))
@@ -1758,27 +1649,20 @@ void levelmove()
             level.playerstate.oldy = level.playerpos.y;
             level.playerpos.x += dpx;
             level.playerpos.y += dpy;
-        }
-        else
-        {
+        } else {
             level.playerstate.oldx = level.playerpos.x;
             level.playerstate.oldy = level.playerpos.y;
         }
         //   moving=false;
-    }
-    else if (level.playerstate.movingback)
-    {
+    } else if (level.playerstate.movingback) {
         GLfloat dpx = pspeed * cos(level.playerpos.dir) / level.playerpos.scale;
         GLfloat dpy = pspeed * sin(level.playerpos.dir) / level.playerpos.scale;
-        if (CanMove(level.playerpos.room, level.playerpos.x - dpx, level.playerpos.y - dpy))
-        {
+        if (CanMove(level.playerpos.room, level.playerpos.x - dpx, level.playerpos.y - dpy)) {
             level.playerstate.oldx = level.playerpos.x;
             level.playerstate.oldy = level.playerpos.y;
             level.playerpos.x -= dpx;
             level.playerpos.y -= dpy;
-        }
-        else
-        {
+        } else {
             level.playerstate.oldx = level.playerpos.x;
             level.playerstate.oldy = level.playerpos.y;
         }
@@ -2054,7 +1938,7 @@ bool draw_finishchapter()
 
     glLoadIdentity();
 
-    //	glClearColor(sin(2*t+1)/2+0.5,sin(t)/2+0.5,sin(t/2+1)/2+0.5,1);
+    //  glClearColor(sin(2*t+1)/2+0.5,sin(t)/2+0.5,sin(t/2+1)/2+0.5,1);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -2062,7 +1946,7 @@ bool draw_finishchapter()
 
     glTranslatef(-0.7, 0.05, 0);
     glScalef(1.5, 1.5, 1.5);
-//	glColor3f(0.5-sin(2*t+1)/2,0.5-sin(t)/2,0.5-sin(t/2+1)/2);
+//  glColor3f(0.5-sin(2*t+1)/2,0.5-sin(t)/2,0.5-sin(t/2+1)/2);
     glColor4f(1, 1, 1, 1);
     print_straight_text("chapter over");
     glTranslatef(0, -0.15, 0);
@@ -2978,774 +2862,652 @@ void draw_title()
 }
 
 
-int main(int argc, char *argv[])
-{
-    //The frame rate regulator
-    Timer fps;
+int main(int argc, char *argv[]) {
+  //The frame rate regulator
+  Timer fps;
 
-    tso = ts_main;
-    saveasmode = false;
+  tso = ts_main;
+  saveasmode = false;
 
-    //Quit flag
-    bool quit = false;
+  //Quit flag
+  bool quit = false;
 
-    //In	itialize
-    if (init() == false)
-    {
-        return 1;
-    }
+  //In  itialize
+  if (init() == false) {
+    return 1;
+  }
 
-    //Our square object
-    Game game;
+  //Our square object
+  Game game;
 
-    //state chooser
+  //state chooser
 l_choosestate:
-    quit = false;
-    wantquit = false;
-    //curtitleselection1=0;
-    switch (gamestate)
-    {
+  quit = false;
+  wantquit = false;
+  //curtitleselection1=0;
+  switch (gamestate) {
     case gs_intro:
-        glClearColor(0, 0, 0, 1);
-        goto l_intro;
-        break;
+      glClearColor(0, 0, 0, 1);
+      goto l_intro;
+      break;
 
     case gs_title:
-        glClearColor(0, 0, 0, 1);
-        goto l_title;
-        break;
+      glClearColor(0, 0, 0, 1);
+      goto l_title;
+      break;
 
     case gs_interlude:
-        goto l_interlude;
-        break;
+      goto l_interlude;
+      break;
 
     case gs_level:
-        goto l_level;
-        break;
+      goto l_level;
+      break;
 
     case gs_quit:
-        goto l_quit;
-        break;
+      goto l_quit;
+      break;
 
     case gs_finishchapter:
-        goto l_finishchapter;
-        break;
-    }
+      goto l_finishchapter;
+      break;
+  }
 
-    //finish screen
+  //finish screen
 l_finishchapter:
-    while (quit == false)
-    {
-        fps.start();
+  while (quit == false) {
+    fps.start();
 
+    if (!draw_finishchapter()) {
+      quit = true;
+      gamestate = gs_title;
+    }
 
-        if (!draw_finishchapter())
-        {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_KEYUP) {
+        //Adjust the velocity
+        switch (event.key.keysym.sym) {
+          case SDLK_ESCAPE:
+          case SDLK_SPACE:
+          case SDLK_RETURN:
             quit = true;
             gamestate = gs_title;
+            fadetoblack();
+            loadtrack(0);
+            break;
+
+          default:
+            break;
         }
-
-        while (SDL_PollEvent(&event))
-        {
-            if (event.type == SDL_KEYUP)
-            {
-                //Adjust the velocity
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_ESCAPE:
-                case SDLK_SPACE:
-                case SDLK_RETURN:
-                    quit = true;
-                    gamestate = gs_title;
-                    fadetoblack();
-                    loadtrack(0);
-                    break;
-
-                default:
-                    break;
-                }
-            }
-            if (event.type == SDL_QUIT)
-            {
-                quit = true;
-                gamestate = gs_quit;
-            }
-        }
-
-
-
-
-        if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND)
-        {
-            SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
-        }
+      }
+      if (event.type == SDL_QUIT) {
+        quit = true;
+        gamestate = gs_quit;
+      }
     }
-    goto l_choosestate;
+
+    if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND) {
+      SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
+    }
+  }
+  goto l_choosestate;
 
 
-    //intro
+  //intro
 l_intro:
-    while (quit == false)
-    {
-        fps.start();
+  while (quit == false) {
+    fps.start();
 
-        while (SDL_PollEvent(&event))
-        {
-            if (event.type == SDL_KEYUP)
-            {
-                //Adjust the velocity
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_ESCAPE:
-                case SDLK_SPACE:
-                    quit = true;
-                    gamestate = gs_title;
-                    break;
-
-                default:
-                    break;
-                }
-            }
-            if (event.type == SDL_QUIT)
-            {
-                quit = true;
-                gamestate = gs_quit;
-            }
-        }
-
-        if (!draw_intro())
-        {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_KEYUP) {
+        //Adjust the velocity
+        switch (event.key.keysym.sym) {
+          case SDLK_ESCAPE:
+          case SDLK_SPACE:
             quit = true;
             gamestate = gs_title;
-        }
+            break;
 
-        if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND)
-        {
-            SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
+          default:
+            break;
         }
+      }
+      if (event.type == SDL_QUIT) {
+        quit = true;
+        gamestate = gs_quit;
+      }
     }
-    goto l_choosestate;
 
-    //title
+    if (!draw_intro()) {
+      quit = true;
+      gamestate = gs_title;
+    }
+
+    if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND) {
+      SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
+    }
+  }
+  goto l_choosestate;
+
+  //title
 l_title:
-    while (quit == false)
-    {
-        fps.start();
-        bool resetright = false;
-        bool resetleftbounds = false;
+  while (quit == false) {
+    fps.start();
+    bool resetright = false;
+    bool resetleftbounds = false;
 
-        while (SDL_PollEvent(&event))
-        {
-            if (event.type == SDL_KEYUP)
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_KEYUP) {
+        //Adjust the velocity
+        switch (event.key.keysym.sym) {
+          case SDLK_ESCAPE:
+          case SDLK_LEFT:
             {
-                //Adjust the velocity
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_ESCAPE:
-                case SDLK_LEFT:
-                {
-                    switch (tso)
-                    {
-                    case ts_main:
-                        if (event.key.keysym.sym == SDLK_ESCAPE)
-                        {
-                            quit = true;
-                            gamestate = gs_quit;
-                            playsound(0);
-                        }
-                        break;
-
-                    case ts_newgameselect:
-                    case ts_newcustomgameselect:
-                        tso = ts_main;
-                        resetlistbounds = true;
-                        playsound(0);
-                        break;
-
-                    case ts_newgamechapterselect:
-                        tso = ts_newgameselect;
-                        playsound(0);
-                        break;
-
-                    case ts_newcustomgamechapterselect:
-                        tso = ts_newcustomgameselect;
-                        playsound(0);
-                        break;
-
-                    case ts_editgameselect:
-                    {
-                        if (saveasmode)
-                        {
-                            if (event.key.keysym.sym == SDLK_ESCAPE)
-                            {
-                                curtitleselection2 = curtitleselection2old;
-                                curtitleselection3 = curtitleselection3old;
-                                afterselection3 = false;
-                                beforeselection3 = false;
-                                quit = true;
-                                gamestate = gs_level;
-                                saveasmode = false;
-                                playsound(0);
-                            }
-                        }
-                        else
-                        {
-                            playsound(0);
-                            tso = ts_main;
-                        }
-                    }
-                    break;
-
-                    case ts_editentername:
-                        tso = ts_editgameselect;
-                        playsound(0);
-                        break;
-
-                    case ts_editchapterselect:
-                        tso = ts_editgameselect;
-                        playsound(0);
-                        break;
-
-                    case ts_editnofiles:
-                        tso = ts_main;
-                        playsound(0);
-                        break;
-                    case ts_nofiles:
-                        //SHOULD NEVER GET HERE
-                        break;
-                    }
-                }
-                break;
-
-                case SDLK_SPACE:
-                case SDLK_RIGHT:
-                case SDLK_RETURN:
-                    if (ignorenextspaceup)
-                    {
-                        ignorenextspaceup = false;
-                    }
-                    else if (tso == ts_main)
-                    {
-                        if (titletick < 1)
-                        {
-                            titletick = 1;
-                        }
-                        else
-                        {
-                            switch (curtitleselection1)
-                            {
-                            case 0:
-                                curtitleselection2 = 0;
-                                tso = ts_newgameselect;
-                                resetlistbounds = true;
-                                playsound(0);
-                                break;
-
-                            case 1:
-                                if (customEpisodeList.size() > 0)
-                                {
-                                    curtitleselection2 = 0;
-                                    tso = ts_newcustomgameselect;
-                                    resetlistbounds = true;
-                                    playsound(0);
-                                }
-                                else
-                                {
-                                    tso = ts_nofiles;
-                                    playsound(0);
-                                }
-                                break;
-
-                            case 2:
-                                if (customEpisodeList.size() > 0)
-                                {
-                                    curtitleselection2 = 0;
-                                    tso = ts_editgameselect;
-                                    resetlistbounds = true;
-                                    playsound(0);
-                                }
-                                else
-                                {
-                                    tso = ts_editnofiles;
-                                    enteringname = "";
-                                    playsound(0);
-                                }
-                                break;
-
-                            case 3:
-                                if (event.key.keysym.sym == SDLK_SPACE)
-                                {
-                                    gamestate = gs_quit;
-                                    quit = true;
-                                    playsound(0);
-                                }
-                                break;
-
-                            default:
-                                break;
-                            }
-                        }
-                    }
-                    else if (tso == ts_newgameselect)
-                    {
-                        tso = ts_newgamechapterselect;
-                        curtitleselection3 = 0;
-                        playsound(0);
-                    }
-                    else if (tso == ts_newcustomgameselect)
-                    {
-                        tso = ts_newcustomgamechapterselect;
-                        curtitleselection3 = 0;
-                        playsound(0);
-                    }
-                    else if (tso == ts_newgamechapterselect)
-                    {
-                        if (event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_RETURN)
-                        {
-                            curlevel = curtitleselection3;
-                            curchapter = episodeList[curtitleselection2].name;
-                            customchapter = false;
-                            episodecount = episodeList[curtitleselection2].num_episodes;
-                            editorenabled = false;
-                            editmode = false;
-                            fadetoblack();
-                            initlevel();
-                            quit = true;
-                        }
-                    }
-                    else if (tso == ts_newcustomgamechapterselect)
-                    {
-                        if (event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_RETURN)
-                        {
-                            {
-                                curlevel = curtitleselection3;
-                                curchapter = customEpisodeList[curtitleselection2].name;
-                                customchapter = true;
-                                episodecount = customEpisodeList[curtitleselection2].num_episodes;
-                                editorenabled = false;
-                                editmode = false;
-                                editor.page = E_FileStuff;
-                                fadetoblack();
-                                initlevel();
-                                quit = true;
-                            }
-                        }
-                    }
-                    else if (tso == ts_editchapterselect)
-                    {
-                        if (event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_RETURN)
-                        {
-                            if (ignorenextspaceup)
-                            {
-                                ignorenextspaceup = false;
-                            }
-                            else
-                            {
-                                //could tidy the following up a little
-                                if (!saveasmode)
-                                    blankLevel(level);
-
-                                if (beforeselection3)
-                                {
-                                    curchapter = customEpisodeList[curtitleselection2].name;
-
-                                    //move all the levels up
-
-                                    for (int i = customEpisodeList[curtitleselection2].num_episodes - 1; i >= 0; i--)
-                                    {
-                                        string s = "custom/" + curchapter + "/" + stringify(i) + ".dat";
-                                        string t = "custom/" + curchapter + "/" + stringify(i + 1) + ".dat";
-                                        renameFile(s, t);
-                                    }
-
-                                    string s = "custom/" + curchapter;
-                                    bf::create_directory(s);
-                                    s += "/0.dat";
-                                    writelevel(s.c_str(), level);
-                                    getEpisodeData();
-                                    quit = true;
-
-
-                                    curlevel = 0;
-                                    customchapter = true;
-                                    episodecount = customEpisodeList[curtitleselection2].num_episodes;
-                                    editorenabled = true;
-                                    if (!saveasmode)
-                                    {
-                                        fadetoblack();
-                                    }
-                                    initlevel();
-                                    resetlistbounds = true;
-                                    saveasmode = false;
-                                    editmode = true;
-                                }
-                                else if (afterselection3)
-                                {
-                                    curchapter = customEpisodeList[curtitleselection2].name;
-
-                                    //move all the levels up
-
-                                    for (int i = customEpisodeList[curtitleselection2].num_episodes - 1; i > curtitleselection3; i--)
-                                    {
-                                        string s = "custom/" + curchapter + "/" + stringify(i) + ".dat";
-                                        string t = "custom/" + curchapter + "/" + stringify(i + 1) + ".dat";
-                                        renameFile(s, t);
-                                    }
-
-                                    string s = "custom/" + curchapter + "/" + stringify(curtitleselection3 + 1) + ".dat";
-                                    writelevel(s.c_str(), level);
-                                    getEpisodeData();
-
-                                    curlevel = curtitleselection3 + 1;
-                                    customchapter = true;
-                                    episodecount = customEpisodeList[curtitleselection2].num_episodes;
-                                    editmode = true;
-                                    editorenabled = true;
-                                    if (!saveasmode)
-                                    {
-                                        fadetoblack();
-                                    }
-                                    initlevel();
-                                    quit = true;
-                                    wantquit = true;
-                                    gamestate = gs_level;
-                                    resetlistbounds = true;
-                                    saveasmode = false;
-                                }
-                                else
-                                {
-                                    curlevel = curtitleselection3;
-                                    curchapter = customEpisodeList[curtitleselection2].name;
-                                    customchapter = true;
-                                    episodecount = customEpisodeList[curtitleselection2].num_episodes;
-                                    editmode = true;
-                                    editorenabled = true;
-
-                                    if (saveasmode)
-                                    {
-                                        string s = "custom/" + curchapter + "/" + stringify(curtitleselection3) + ".dat";
-                                        writelevel(s.c_str(), level);
-                                        getEpisodeData();
-                                    }
-
-                                    if (!saveasmode)
-                                    {
-                                        fadetoblack();
-                                    }
-                                    initlevel();
-                                    quit = true;
-                                    wantquit = true;
-                                    gamestate = gs_level;
-                                    resetlistbounds = true;
-                                    saveasmode = false;
-                                }
-                            }
-                        }
-                    }
-                    else if (tso == ts_editgameselect)
-                    {
-                        if (curtitleselection2 >= 0)
-                        {
-                            tso = ts_editchapterselect;
-                            resetright = true;
-                            curtitleselection3 = 0;                                    //unnecessary?
-                            beforeselection3 = true;
-                            afterselection3 = false;
-                        }
-                        else
-                        {
-                            enteringname = "";
-                            tso = ts_editentername;
-                        }
-                    }
-                    break;
-
-                case SDLK_UP:
-                case SDLK_LEFTBRACKET:
+              switch (tso) {
+                case ts_main:
+                  if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    quit = true;
+                    gamestate = gs_quit;
                     playsound(0);
-                    if (tso == ts_main)
-                    {
-                        if (customEpisodeList.size() == 0 && curtitleselection1 == 2)
-                            curtitleselection1 = 0;
-                        else
-                            curtitleselection1 = (curtitleselection1 + 4 - 1) % 4;
-                    }
-                    else if (tso == ts_newgameselect)
-                    {
-                        if (savedata.canplay[(curtitleselection2 + episodeList.size() - 1) % episodeList.size()][0])
-                            curtitleselection2 = (curtitleselection2 + episodeList.size() - 1) % episodeList.size();
-                        else
-                        {
-                            int i;
-                            for (i = episodeList.size() - 1; i >= 0; i--)
-                            {
-                                if (savedata.canplay[i][0])
-                                    break;
-                            }
-                            curtitleselection2 = i;
-                        }
-                    }
-                    else if (tso == ts_newgamechapterselect)
-                    {
-                        int candidate = (curtitleselection3 + episodeList[curtitleselection2].num_episodes - 1) % episodeList[curtitleselection2].num_episodes;
-                        if (savedata.canplay[curtitleselection2][candidate])
-                            curtitleselection3 = candidate;
-                        else
-                        {
-                            int i;
-                            for (i = episodes_in_chapter[curtitleselection2] - 1; i >= 0; i--)
-                            {
-                                if (savedata.canplay[curtitleselection2][i])
-                                    break;
-                            }
-                            curtitleselection3 = i;
-                        }
-                        //curtitleselection3=(curtitleselection3+episodeList[curtitleselection2].num_episodes-1)%episodeList[curtitleselection2].num_episodes;
-                    }
-                    else if (tso == ts_newcustomgameselect)
-                        curtitleselection2 = (curtitleselection2 + customEpisodeList.size() - 1) % customEpisodeList.size();
-                    else if (tso == ts_newcustomgamechapterselect)
-                        curtitleselection3 = (curtitleselection3 + customEpisodeList[curtitleselection2].num_episodes - 1) % customEpisodeList[curtitleselection2].num_episodes;
-                    else if (tso == ts_editgameselect)
-                    {
-                        //needlessly complex
-                        if (curtitleselection2 > 0)
-                            curtitleselection2 = (curtitleselection2 + customEpisodeList.size() - 1) % customEpisodeList.size();
-                        else if (curtitleselection2 == 0)
-                            curtitleselection2 = -1;
-                        else
-                            curtitleselection2 = customEpisodeList.size() - 1;
-                    }
-                    else if (tso == ts_editchapterselect)
-                    {
-                        if (afterselection3)
-                        {
-                            afterselection3 = false;
-                        }
-                        else if (beforeselection3)
-                        {
-                            beforeselection3 = false;
-                            curtitleselection3 = (curtitleselection3 + customEpisodeList[curtitleselection2].num_episodes - 1) % customEpisodeList[curtitleselection2].num_episodes;
-                            afterselection3 = true;
-                        }
-                        else if (curtitleselection3 == 0)
-                        {
-                            beforeselection3 = true;
-                        }
-                        else
-                        {
-                            curtitleselection3 = (curtitleselection3 + customEpisodeList[curtitleselection2].num_episodes - 1) % customEpisodeList[curtitleselection2].num_episodes;
-                            afterselection3 = true;
-                        }
-                    }
-                    break;
+                  }
+                  break;
 
-                case SDLK_DOWN:
-                case SDLK_RIGHTBRACKET:
-                    playsound(0);
-                    if (tso == ts_main)
-                    {
-                        if (customEpisodeList.size() == 0 && curtitleselection1 == 0)
-                            curtitleselection1 = 2;
-                        else
-                            curtitleselection1 = (curtitleselection1 + 1) % 4;
-                    }
-                    else if (tso == ts_newgameselect)
-                    {
-                        if (savedata.canplay[(curtitleselection2 + 1) % episodeList.size()][0])
-                            curtitleselection2 = (curtitleselection2 + 1) % episodeList.size();
-                        else (curtitleselection2 = 0);
-                    }
-                    else if (tso == ts_newgamechapterselect)
-                    {
-                        if (savedata.canplay[curtitleselection2][(curtitleselection3 + 1) % episodeList[curtitleselection2].num_episodes])
-                            curtitleselection3 = (curtitleselection3 + 1) % episodeList[curtitleselection2].num_episodes;
-                        else
-                            curtitleselection3 = 0;
-                    }
-                    else if (tso == ts_newcustomgameselect)
-                        curtitleselection2 = (curtitleselection2 + 1) % customEpisodeList.size();
-                    else if (tso == ts_newcustomgamechapterselect)
-                        curtitleselection3 = (curtitleselection3 + 1) % customEpisodeList[curtitleselection2].num_episodes;
-                    else if (tso == ts_editgameselect)
-                        curtitleselection2 = (curtitleselection2 + 1) % customEpisodeList.size();
-                    else if (tso == ts_editchapterselect)
-                    {
-                        if (beforeselection3)
-                        {
-                            beforeselection3 = false;
-                        }
-                        else if (afterselection3)
-                        {
-                            curtitleselection3 = (curtitleselection3 + 1) % customEpisodeList[curtitleselection2].num_episodes;
-                            afterselection3 = false;
-                            if (curtitleselection3 == 0)
-                                beforeselection3 = true;
-                        }
-                        else
-                            afterselection3 = true;
-                    }
-                    break;
+                case ts_newgameselect:
+                case ts_newcustomgameselect:
+                  tso = ts_main;
+                  resetlistbounds = true;
+                  playsound(0);
+                  break;
 
-                default:
-                    break;
-                }
-            }
-            else if (event.type == SDL_KEYDOWN)
-            {
-                if (event.key.keysym.sym == SDLK_BACKSPACE)
-                {
-                    if (tso == ts_editentername || tso == ts_editnofiles)
-                    {
-                        enteringname = enteringname.substr(0, curchapter.length() - 1);
-                    }
-                }
-                else if (event.key.keysym.sym == SDLK_RETURN)
-                {
-                    if ((tso == ts_editentername || tso == ts_editnofiles) && (enteringname != ""))
-                    {
-                        string s;
-                        curchapter = enteringname;
-                        s = "custom/" + curchapter;
+                case ts_newgamechapterselect:
+                  tso = ts_newgameselect;
+                  playsound(0);
+                  break;
 
-                        //need to check if it exists already
-                        if (!bf::exists(s))
-                        {
-                            bf::create_directory(s);
-                            if (!saveasmode)
-                                blankLevel(level);
-                            s += "/0.dat";
-                            writelevel(s.c_str(), level);
-                            getEpisodeData();
-                        }
-                        tso = ts_editgameselect;
+                case ts_newcustomgamechapterselect:
+                  tso = ts_newcustomgameselect;
+                  playsound(0);
+                  break;
 
-                        // set curtitleselection2 to point to this
-                        for (unsigned int i = 0; i < customEpisodeList.size(); i++)
-                        {
-                            if (curchapter == customEpisodeList[i].name)
-                            {
-                                curtitleselection2 = i;
-                                break;
-                            }
-                        }
-                        //maybe next should change to ts_editgameepisodeselect and point at first episode?( as opposed to insert new)
-//						tso=ts_editchapterselect;
-
-                        resetleftbounds = true;
-                        if (saveasmode)
-                        {
-                            curlevel = 0;
-                            curchapter = customEpisodeList[curtitleselection2].name;
-                            gamestate = gs_level;
-                            editmode = true;
-                            editorenabled = true;
-                            wantquit = true;
-                            quit = true;
-                            resetlistbounds = true;
-                            initlevel();
-                            saveasmode = false;
-                        }
-                        curtitleselection3 = 0;
-                        beforeselection3 = false;
+                case ts_editgameselect:
+                  {
+                    if (saveasmode) {
+                      if (event.key.keysym.sym == SDLK_ESCAPE) {
+                        curtitleselection2 = curtitleselection2old;
+                        curtitleselection3 = curtitleselection3old;
                         afterselection3 = false;
+                        beforeselection3 = false;
+                        quit = true;
+                        gamestate = gs_level;
+                        saveasmode = false;
+                        playsound(0);
+                      }
+                    } else {
+                      playsound(0);
+                      tso = ts_main;
                     }
-                }
-                else if (event.key.keysym.unicode < 0x80 && event.key.keysym.unicode > 0)
-                {
-                    if (tso == ts_editentername || (tso == ts_editnofiles))
-                    {
-                        char ch = (char)event.key.keysym.unicode;
-                        enteringname.append(1, tolower(ch));
-                        if (enteringname.length() > 13)
-                            enteringname.resize(13);
-                    }
-                }
-            }
+                  }
+                  break;
 
-            if (event.type == SDL_QUIT)
-            {
+                case ts_editentername:
+                  tso = ts_editgameselect;
+                  playsound(0);
+                  break;
+
+                case ts_editchapterselect:
+                  tso = ts_editgameselect;
+                  playsound(0);
+                  break;
+
+                case ts_editnofiles:
+                  tso = ts_main;
+                  playsound(0);
+                  break;
+                case ts_nofiles:
+                  //SHOULD NEVER GET HERE
+                  break;
+              }
+            }
+            break;
+
+          case SDLK_SPACE:
+          case SDLK_RIGHT:
+          case SDLK_RETURN:
+            if (ignorenextspaceup) {
+              ignorenextspaceup = false;
+            } else if (tso == ts_main) {
+              if (titletick < 1) {
+                titletick = 1;
+              } else {
+                switch (curtitleselection1) {
+                  case 0:
+                    curtitleselection2 = 0;
+                    tso = ts_newgameselect;
+                    resetlistbounds = true;
+                    playsound(0);
+                    break;
+
+                  case 1:
+                    if (customEpisodeList.size() > 0) {
+                      curtitleselection2 = 0;
+                      tso = ts_newcustomgameselect;
+                      resetlistbounds = true;
+                      playsound(0);
+                    } else {
+                      tso = ts_nofiles;
+                      playsound(0);
+                    }
+                    break;
+
+                  case 2:
+                    if (customEpisodeList.size() > 0) {
+                      curtitleselection2 = 0;
+                      tso = ts_editgameselect;
+                      resetlistbounds = true;
+                      playsound(0);
+                    } else {
+                      tso = ts_editnofiles;
+                      enteringname = "";
+                      playsound(0);
+                    }
+                    break;
+
+                  case 3:
+                    if (event.key.keysym.sym == SDLK_SPACE) {
+                      gamestate = gs_quit;
+                      quit = true;
+                      playsound(0);
+                    }
+                    break;
+
+                  default:
+                    break;
+                }
+              }
+            } else if (tso == ts_newgameselect) {
+              tso = ts_newgamechapterselect;
+              curtitleselection3 = 0;
+              playsound(0);
+            } else if (tso == ts_newcustomgameselect) {
+              tso = ts_newcustomgamechapterselect;
+              curtitleselection3 = 0;
+              playsound(0);
+            } else if (tso == ts_newgamechapterselect) {
+              if (event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_RETURN) {
+                curlevel = curtitleselection3;
+                curchapter = episodeList[curtitleselection2].name;
+                customchapter = false;
+                episodecount = episodeList[curtitleselection2].num_episodes;
+                editorenabled = false;
+                editmode = false;
+                fadetoblack();
+                initlevel();
                 quit = true;
-                gamestate = gs_quit;
-            }
-        }
+              }
+            } else if (tso == ts_newcustomgamechapterselect) {
+              if (event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_RETURN) {
+                {
+                  curlevel = curtitleselection3;
+                  curchapter = customEpisodeList[curtitleselection2].name;
+                  customchapter = true;
+                  episodecount = customEpisodeList[curtitleselection2].num_episodes;
+                  editorenabled = false;
+                  editmode = false;
+                  editor.page = E_FileStuff;
+                  fadetoblack();
+                  initlevel();
+                  quit = true;
+                }
+              }
+            } else if (tso == ts_editchapterselect) {
+              if (event.key.keysym.sym == SDLK_SPACE || event.key.keysym.sym == SDLK_RETURN) {
+                if (ignorenextspaceup) {
+                  ignorenextspaceup = false;
+                } else {
+                  //could tidy the following up a little
+                  if (!saveasmode) {
+                    blankLevel(level);
+                  }
 
-        if (!quit)          //don't draw if changing state...get flickering otherwise, because there's a pause to load the level
-        {
-            if (tso == ts_editgameselect || tso == ts_editentername || tso == ts_editchapterselect)
-            {
-                draw_editmode(resetright, resetleftbounds);
-            }
-            else if (tso == ts_editnofiles)
-            {
-                draw_editmodenochapter();
-            }
-            else
-                draw_title();
-        }
+                  if (beforeselection3) {
+                    curchapter = customEpisodeList[curtitleselection2].name;
 
-        if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND)
-        {
-            SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
+                    //move all the levels up
+
+                    for (int i = customEpisodeList[curtitleselection2].num_episodes - 1; i >= 0; i--) {
+                      string s = "custom/" + curchapter + "/" + stringify(i) + ".dat";
+                      string t = "custom/" + curchapter + "/" + stringify(i + 1) + ".dat";
+                      renameFile(s, t);
+                    }
+
+                    string s = "custom/" + curchapter;
+                    bf::create_directory(s);
+                    s += "/0.dat";
+                    writelevel(s.c_str(), level);
+                    getEpisodeData();
+                    quit = true;
+
+
+                    curlevel = 0;
+                    customchapter = true;
+                    episodecount = customEpisodeList[curtitleselection2].num_episodes;
+                    editorenabled = true;
+                    if (!saveasmode) {
+                      fadetoblack();
+                    }
+                    initlevel();
+                    resetlistbounds = true;
+                    saveasmode = false;
+                    editmode = true;
+                  } else if (afterselection3) {
+                    curchapter = customEpisodeList[curtitleselection2].name;
+
+                    //move all the levels up
+
+                    for (int i = customEpisodeList[curtitleselection2].num_episodes - 1; i > curtitleselection3; i--) {
+                      string s = "custom/" + curchapter + "/" + stringify(i) + ".dat";
+                      string t = "custom/" + curchapter + "/" + stringify(i + 1) + ".dat";
+                      renameFile(s, t);
+                    }
+
+                    string s = "custom/" + curchapter + "/" + stringify(curtitleselection3 + 1) + ".dat";
+                    writelevel(s.c_str(), level);
+                    getEpisodeData();
+
+                    curlevel = curtitleselection3 + 1;
+                    customchapter = true;
+                    episodecount = customEpisodeList[curtitleselection2].num_episodes;
+                    editmode = true;
+                    editorenabled = true;
+                    if (!saveasmode) {
+                      fadetoblack();
+                    }
+                    initlevel();
+                    quit = true;
+                    wantquit = true;
+                    gamestate = gs_level;
+                    resetlistbounds = true;
+                    saveasmode = false;
+                  } else {
+                    curlevel = curtitleselection3;
+                    curchapter = customEpisodeList[curtitleselection2].name;
+                    customchapter = true;
+                    episodecount = customEpisodeList[curtitleselection2].num_episodes;
+                    editmode = true;
+                    editorenabled = true;
+
+                    if (saveasmode) {
+                      string s = "custom/" + curchapter + "/" + stringify(curtitleselection3) + ".dat";
+                      writelevel(s.c_str(), level);
+                      getEpisodeData();
+                    }
+
+                    if (!saveasmode) {
+                      fadetoblack();
+                    }
+                    initlevel();
+                    quit = true;
+                    wantquit = true;
+                    gamestate = gs_level;
+                    resetlistbounds = true;
+                    saveasmode = false;
+                  }
+                }
+              }
+            } else if (tso == ts_editgameselect) {
+              if (curtitleselection2 >= 0) {
+                tso = ts_editchapterselect;
+                resetright = true;
+                curtitleselection3 = 0;                                    //unnecessary?
+                beforeselection3 = true;
+                afterselection3 = false;
+              } else {
+                enteringname = "";
+                tso = ts_editentername;
+              }
+            }
+            break;
+
+          case SDLK_UP:
+          case SDLK_LEFTBRACKET:
+            playsound(0);
+            if (tso == ts_main) {
+              if (customEpisodeList.size() == 0 && curtitleselection1 == 2) {
+                curtitleselection1 = 0;
+              } else {
+                curtitleselection1 = (curtitleselection1 + 4 - 1) % 4;
+              }
+            } else if (tso == ts_newgameselect) {
+              if (savedata.canplay[(curtitleselection2 + episodeList.size() - 1) % episodeList.size()][0]) {
+                curtitleselection2 = (curtitleselection2 + episodeList.size() - 1) % episodeList.size();
+              } else {
+                int i;
+                for (i = episodeList.size() - 1; i >= 0; i--) {
+                  if (savedata.canplay[i][0]) {
+                    break;
+                  }
+                }
+                curtitleselection2 = i;
+              }
+            } else if (tso == ts_newgamechapterselect) {
+              int candidate = (curtitleselection3 + episodeList[curtitleselection2].num_episodes - 1) % episodeList[curtitleselection2].num_episodes;
+              if (savedata.canplay[curtitleselection2][candidate]) {
+                curtitleselection3 = candidate;
+              } else {
+                int i;
+                for (i = episodes_in_chapter[curtitleselection2] - 1; i >= 0; i--) {
+                  if (savedata.canplay[curtitleselection2][i]) {
+                    break;
+                  }
+                }
+                curtitleselection3 = i;
+              }
+              //curtitleselection3=(curtitleselection3+episodeList[curtitleselection2].num_episodes-1)%episodeList[curtitleselection2].num_episodes;
+            } else if (tso == ts_newcustomgameselect) {
+              curtitleselection2 = (curtitleselection2 + customEpisodeList.size() - 1) % customEpisodeList.size();
+            } else if (tso == ts_newcustomgamechapterselect) {
+              curtitleselection3 = (curtitleselection3 + customEpisodeList[curtitleselection2].num_episodes - 1) % customEpisodeList[curtitleselection2].num_episodes;
+            } else if (tso == ts_editgameselect) {
+              //needlessly complex
+              if (curtitleselection2 > 0) {
+                curtitleselection2 = (curtitleselection2 + customEpisodeList.size() - 1) % customEpisodeList.size();
+              } else if (curtitleselection2 == 0) {
+                curtitleselection2 = -1;
+              } else {
+                curtitleselection2 = customEpisodeList.size() - 1;
+              }
+            } else if (tso == ts_editchapterselect) {
+              if (afterselection3) {
+                afterselection3 = false;
+              } else if (beforeselection3) {
+                beforeselection3 = false;
+                curtitleselection3 = (curtitleselection3 + customEpisodeList[curtitleselection2].num_episodes - 1) % customEpisodeList[curtitleselection2].num_episodes;
+                afterselection3 = true;
+              } else if (curtitleselection3 == 0) {
+                beforeselection3 = true;
+              } else {
+                curtitleselection3 = (curtitleselection3 + customEpisodeList[curtitleselection2].num_episodes - 1) % customEpisodeList[curtitleselection2].num_episodes;
+                afterselection3 = true;
+              }
+            }
+            break;
+
+          case SDLK_DOWN:
+          case SDLK_RIGHTBRACKET:
+            playsound(0);
+            if (tso == ts_main) {
+              if (customEpisodeList.size() == 0 && curtitleselection1 == 0) {
+                curtitleselection1 = 2;
+              } else {
+                curtitleselection1 = (curtitleselection1 + 1) % 4;
+              }
+            } else if (tso == ts_newgameselect) {
+              if (savedata.canplay[(curtitleselection2 + 1) % episodeList.size()][0]) {
+                curtitleselection2 = (curtitleselection2 + 1) % episodeList.size();
+              } else {
+                curtitleselection2 = 0;
+              }
+            } else if (tso == ts_newgamechapterselect) {
+              if (savedata.canplay[curtitleselection2][(curtitleselection3 + 1) % episodeList[curtitleselection2].num_episodes]) {
+                curtitleselection3 = (curtitleselection3 + 1) % episodeList[curtitleselection2].num_episodes;
+              } else {
+                curtitleselection3 = 0;
+              }
+            } else if (tso == ts_newcustomgameselect) {
+              curtitleselection2 = (curtitleselection2 + 1) % customEpisodeList.size();
+            } else if (tso == ts_newcustomgamechapterselect) {
+              curtitleselection3 = (curtitleselection3 + 1) % customEpisodeList[curtitleselection2].num_episodes;
+            } else if (tso == ts_editgameselect) {
+              curtitleselection2 = (curtitleselection2 + 1) % customEpisodeList.size();
+            } else if (tso == ts_editchapterselect) {
+              if (beforeselection3) {
+                beforeselection3 = false;
+              } else if (afterselection3) {
+                curtitleselection3 = (curtitleselection3 + 1) % customEpisodeList[curtitleselection2].num_episodes;
+                afterselection3 = false;
+                if (curtitleselection3 == 0) {
+                  beforeselection3 = true;
+                }
+              } else {
+                afterselection3 = true;
+              }
+            }
+            break;
+
+          default:
+            break;
         }
+      } else if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_BACKSPACE) {
+          if (tso == ts_editentername || tso == ts_editnofiles) {
+            enteringname = enteringname.substr(0, curchapter.length() - 1);
+          }
+        } else if (event.key.keysym.sym == SDLK_RETURN) {
+          if ((tso == ts_editentername || tso == ts_editnofiles) && (enteringname != "")) {
+            string s;
+            curchapter = enteringname;
+            s = "custom/" + curchapter;
+
+            //need to check if it exists already
+            if (!bf::exists(s)) {
+              bf::create_directory(s);
+              if (!saveasmode) {
+                blankLevel(level);
+              }
+              s += "/0.dat";
+              writelevel(s.c_str(), level);
+              getEpisodeData();
+            }
+            tso = ts_editgameselect;
+
+            // set curtitleselection2 to point to this
+            for (unsigned int i = 0; i < customEpisodeList.size(); i++) {
+              if (curchapter == customEpisodeList[i].name) {
+                curtitleselection2 = i;
+                break;
+              }
+            }
+            //maybe next should change to ts_editgameepisodeselect and point at first episode?( as opposed to insert new)
+            //            tso=ts_editchapterselect;
+
+            resetleftbounds = true;
+            if (saveasmode) {
+              curlevel = 0;
+              curchapter = customEpisodeList[curtitleselection2].name;
+              gamestate = gs_level;
+              editmode = true;
+              editorenabled = true;
+              wantquit = true;
+              quit = true;
+              resetlistbounds = true;
+              initlevel();
+              saveasmode = false;
+            }
+            curtitleselection3 = 0;
+            beforeselection3 = false;
+            afterselection3 = false;
+          }
+        } else if (event.key.keysym.unicode < 0x80 && event.key.keysym.unicode > 0) {
+          if (tso == ts_editentername || (tso == ts_editnofiles)) {
+            char ch = (char)event.key.keysym.unicode;
+            enteringname.append(1, tolower(ch));
+            if (enteringname.length() > 13) {
+              enteringname.resize(13);
+            }
+          }
+        }
+      }
+
+      if (event.type == SDL_QUIT) {
+        quit = true;
+        gamestate = gs_quit;
+      }
     }
-    goto l_choosestate;
+
+    if (!quit)          //don't draw if changing state...get flickering otherwise, because there's a pause to load the level
+    {
+      if (tso == ts_editgameselect || tso == ts_editentername || tso == ts_editchapterselect) {
+        draw_editmode(resetright, resetleftbounds);
+      } else if (tso == ts_editnofiles) {
+        draw_editmodenochapter();
+      } else {
+        draw_title();
+      }
+    }
+
+    if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND) {
+      SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
+    }
+  }
+  goto l_choosestate;
 
 l_level:
 l_interlude:
-    while (quit == false)
-    {
-        //Start the frame level.levelparams.timer
-        fps.start();
+  while (quit == false) {
+    //Start the frame level.levelparams.timer
+    fps.start();
 
+    //While there are events to handle
+    while (SDL_PollEvent(&event)) {
+      //Handle key presses
+      game.handle_input();
 
-
-        //While there are events to handle
-        while (SDL_PollEvent(&event))
-        {
-            //Handle key presses
-            game.handle_input();
-
-            if (event.type == SDL_QUIT)
-            {
-                quit = true;
-                gamestate = gs_quit;
-            }
-        }
-
-        //Move the square
-        game.move();
-
-
-
-        //Clear the screen
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        game.show();
-
-        if (editmode)
-            editor.overlay();
-
-        SDL_GL_SwapBuffers();
-
-        if (wantquit)
-        {
-            quit = true;
-        }
-
-        //Cap the frame rate
-        if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND)
-        {
-            SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
-        }
+      if (event.type == SDL_QUIT) {
+        quit = true;
+        gamestate = gs_quit;
+      }
     }
-    goto l_choosestate;
+
+    //Move the square
+    game.move();
+
+    //Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    game.show();
+
+    if (editmode) {
+      editor.overlay();
+    }
+
+    SDL_GL_SwapBuffers();
+
+    if (wantquit) {
+      quit = true;
+    }
+
+    //Cap the frame rate
+    if (fps.get_ticks() < 1000 / FRAMES_PER_SECOND) {
+      SDL_Delay((1000 / FRAMES_PER_SECOND) - fps.get_ticks());
+    }
+  }
+  goto l_choosestate;
 
 
 l_quit:
-    //Clean up
-    fadetoblack();
-    clean_up();
+  //Clean up
+  fadetoblack();
+  clean_up();
 
-    return 0;
+  return 0;
 }

@@ -13,8 +13,8 @@
 const int MUSICCOUNT=38;
 
 struct fmod_dat {
-	FMOD_SYSTEM* system;
-	FMOD_SOUND* sound;
+  FMOD_SYSTEM* system;
+  FMOD_SOUND* sound;
 };
 
 void initsound();

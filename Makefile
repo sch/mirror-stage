@@ -1,0 +1,3 @@
+PROGRAM=mirrorstage
+
+$(PROGRAM):main.

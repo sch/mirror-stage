@@ -17,9 +17,9 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "point.c"
-#include "rectangle.c"
-#include "triangle.c"
+#include "geometry/point.c"
+#include "geometry/rectangle.c"
+#include "geometry/triangle.c"
 
 const GLfloat Pi = 3.1415926535f;
 
@@ -161,9 +161,9 @@ distfromlinesq(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2, GLfloat x, GLfloa
     GLfloat C = x2 - x1;
     GLfloat D = y2 - y1;
 
-    GLfloat dot = A * C + B * D;
+    GLfloat dot    = A * C + B * D;
     GLfloat len_sq = lengthsq(C, D);
-    GLfloat param = dot / len_sq;
+    GLfloat param  = dot / len_sq;
 
     GLfloat xx, yy;
 
@@ -219,10 +219,10 @@ segmentsIntersect(GLfloat Ax, GLfloat Ay,
     //  (2) Rotate the system so that point B is on the positive X axis.
     theCos = Bx / distAB;
     theSin = By / distAB;
-    newX = Cx * theCos + Cy * theSin;
-    Cy = Cy * theCos - Cx * theSin; Cx = newX;
-    newX = Dx * theCos + Dy * theSin;
-    Dy = Dy * theCos - Dx * theSin; Dx = newX;
+    newX   = Cx * theCos + Cy * theSin;
+    Cy     = Cy * theCos - Cx *   theSin; Cx = newX;
+    newX   = Dx * theCos + Dy * theSin;
+    Dy     = Dy * theCos - Dx *   theSin; Dx = newX;
 
     //  Fail if segment C-D doesn't cross line A-B.
     if (Cy < 0.0f && Dy < 0.0f || Cy >= 0.0f && Dy >= 0.0f) return false;
@@ -259,12 +259,12 @@ lineSegmentIntersection(GLfloat Ax, GLfloat Ay,
     //  (2) Rotate the system so that point B is on the positive X axis.
     theCos = Bx/distAB;
     theSin = By/distAB;
-    newX = Cx*theCos + Cy*theSin;
-    Cy   = Cy*theCos - Cx*theSin;
-    Cx   = newX;
-    newX = Dx*theCos + Dy*theSin;
-    Dy   = Dy*theCos - Dx*theSin;
-    Dx   = newX;
+    newX   = Cx*theCos + Cy*theSin;
+    Cy     = Cy*theCos - Cx*theSin;
+    Cx     = newX;
+    newX   = Dx*theCos + Dy*theSin;
+    Dy     = Dy*theCos - Dx*theSin;
+    Dx     = newX;
 
     //  Fail if segment C-D doesn't cross line A-B.
     if (Cy<0.0f && Dy<0.0f || Cy >= 0.0f && Dy >= 0.0f) return false;
@@ -289,21 +289,21 @@ triangleintersect(GLfloat tx1, GLfloat ty1, GLfloat tx2, GLfloat ty2, GLfloat tx
 {
 
     // Compute vectors
-    GLfloat vx0 = tx3 - tx1;
-    GLfloat vy0 = ty3 - ty1;
-    GLfloat vx1 = tx2 - tx1;
-    GLfloat vy1 = ty2 - ty1;
+    GLfloat vx0  = tx3 - tx1;
+    GLfloat vy0  = ty3 - ty1;
+    GLfloat vx1  = tx2 - tx1;
+    GLfloat vy1  = ty2 - ty1;
     GLfloat vx2a = px - tx1;
     GLfloat vy2a = py - ty1;
     GLfloat vx2b = qx - tx1;
     GLfloat vy2b = qy - ty1;
 
     // Compute dot products
-    GLfloat dot00 = vx0*vx0+vy0*vy0;
-    GLfloat dot01 = vx0*vx1+vy0*vy1;
+    GLfloat dot00  = vx0*vx0+vy0*vy0;
+    GLfloat dot01  = vx0*vx1+vy0*vy1;
     GLfloat dot02a = vx0*vx2a+vy0*vy2a;
     GLfloat dot02b = vx0*vx2b+vy0*vy2b;
-    GLfloat dot11 = vx1*vx1+vy1*vy1;
+    GLfloat dot11  = vx1*vx1+vy1*vy1;
     GLfloat dot12a = vx1*vx2a+vy1*vy2a;
     GLfloat dot12b = vx1*vx2b+vy1*vy2b;
 

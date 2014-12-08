@@ -17,19 +17,21 @@ maybe leave this as a pure hpp file
  levelcount
 
  [refresh]
-//
  load chapter
  new chapter (with one empty level)
  [delete chapter?...nah...]
 
- //
  in-editor options
  new episode
  save [need to display file-name somewhere?]
- save as******NEEDS DIALOG******** to display list of current episode numbers, along with option to create new one (directly consequent to the others, I guess...maybe have them all display in a list, with the last/new chapter being a different colour, with a different tooltip?)
+ save as******NEEDS DIALOG******** to display list of current episode numbers,
+ along with option to create new one (directly consequent to the others,
+ I guess...maybe have them all display in a list, with the last/new chapter
+ being a different colour, with a different tooltip?)
  quit to menu (should go to editor menu, though (same with escape))
 
- //need music settings as well? (maybe one track per chapter? (one (optional) music.ogg file in each chapter folder) or is that too little?)
+ need music settings as well? (maybe one track per chapter? (one (optional)
+ music.ogg file in each chapter folder) or is that too little?)
 
 */
 
@@ -54,10 +56,14 @@ vector<EpisodeDat> customEpisodeList;
 // comparison, not case sensitive.
 bool compare_nocase (EpisodeDat first, EpisodeDat second) {
   unsigned int i = 0;
-  while ( (i < first.name.length()) && (i < second.name.length()) ) {
-    if (tolower(first.name[i]) < tolower(second.name[i])) {
+  while ( (i < first.name.length()) && (i < second.name.length()) )
+  {
+    if (tolower(first.name[i]) < tolower(second.name[i]))
+    {
       return true;
-    } else if (tolower(first.name[i]) > tolower(second.name[i])) {
+    }
+    else if (tolower(first.name[i]) > tolower(second.name[i]))
+    {
       return false;
     }
     ++i;
@@ -73,15 +79,18 @@ void getEpisodeData() {
     bf::path p("chapters");
     bf::directory_iterator dir_iter(p), dir_end;
 
-    for (; dir_iter != dir_end; ++dir_iter) {
+    for (; dir_iter != dir_end; ++dir_iter)
+    {
 
-      if ( bf::is_directory((*dir_iter)) ) {
+      if ( bf::is_directory((*dir_iter)) )
+      {
         EpisodeDat ed;
         ed.name = (*dir_iter).leaf();
         ed.num_episodes=0;
         bf::path p("chapters/"+(*dir_iter).leaf());
         bf::directory_iterator sub_dir_iter(p), sub_dir_end;
-        for(; sub_dir_iter != sub_dir_end; ++sub_dir_iter) {
+        for(; sub_dir_iter != sub_dir_end; ++sub_dir_iter)
+        {
           if (bf::extension(*sub_dir_iter)==".dat" && (sub_dir_iter->leaf()[0]!='.')) {
             ed.num_episodes++;
           }
@@ -107,13 +116,14 @@ void getEpisodeData() {
         bf::directory_iterator sub_dir_iter(p), sub_dir_end;
         for(;sub_dir_iter != sub_dir_end; ++sub_dir_iter)
         {
-          if (bf::extension(*sub_dir_iter)==".dat"&& (sub_dir_iter->leaf()[0]!='.'))
+          if (bf::extension(*sub_dir_iter)==".dat" && (sub_dir_iter->leaf()[0]!='.'))
+          {
             ed.num_episodes++;
+          }
         }
         customEpisodeList.push_back(ed);
       }
     }
-
 
     sort(customEpisodeList.begin(),customEpisodeList.end(),compare_nocase);
   }

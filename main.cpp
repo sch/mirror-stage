@@ -11,7 +11,6 @@
 #include <vector>
 using namespace std;
 
-
 #include "main.hpp"
 #include "readwrite.hpp"
 #include "savegame.hpp"
@@ -52,7 +51,6 @@ bool ignorenextspaceup  = false;
 
 /*********
  * Global Constants
- *
  **********/
 
 const int     SCREEN_BPP        = 32;
@@ -60,25 +58,28 @@ const int     FRAMES_PER_SECOND = 30;
 const GLfloat pl_s              = 0.1f; //player line size
 const GLfloat pspeed            = 0.015f; //player speed
 
-/*********
+/* ********
  * Memory Management Code; used in editor
- **********/
+ * TODO: This may not be true
+ * *********/
 
 int  lastroomcountallocated = DEFAULTROOMCOUNT;
 bool allocated              = false;
 
-void allocOutlineLists(int NUM) {
-    deallocOutlineLists();
+void
+allocOutlineLists(int NUM) {
+    if (allocated) {
+        deallocOutlineLists();
+    }
     level.displaylists.roomoutlines = glGenLists(NUM);
     lastroomcountallocated = NUM;
     allocated = false;
 }
 
-void deallocOutlineLists() {
-    if (allocated) {
-        glDeleteLists(level.displaylists.roomoutlines, lastroomcountallocated);
-        allocated = false;
-    }
+void
+deallocOutlineLists() {
+    glDeleteLists(level.displaylists.roomoutlines, lastroomcountallocated);
+    allocated = false;
 }
 
 /*********
@@ -87,12 +88,12 @@ void deallocOutlineLists() {
 #include "font.hpp"
 
 
-/*********
+/* ********
  * Level manipulation functions
- *
- **********/
+ * *********/
 
-void clearsizes()
+void
+clearsizes()
 {
     level.entitydata.curEntityPositions.clear();
     level.deriveddata.portalcount.clear();
@@ -103,9 +104,12 @@ void clearsizes()
     ROOMCOUNT = 0;
 }
 
-void resizethings(int newroomcount, bool forceresize)
+void
+resizethings(int newroomcount, bool forceresize)
 {
-    if (newroomcount <= ROOMCOUNT && !forceresize) return;
+    if (newroomcount <= ROOMCOUNT && !forceresize) {
+        return;
+    }
 
     level.entitydata.curEntityPositions.resize(newroomcount);
     level.deriveddata.portalcount.resize(newroomcount);
@@ -369,8 +373,14 @@ void moveEntity(Entity &E, int room)
         {
             GLfloat ls = lengthsq(level.playerpos.x - E.x, level.playerpos.y - E.y);
             const GLfloat r = 0.4 * 0.4;
-            if ((r > ls) && (getscalevisit(level.playerpos.scale) == 5) || (getscalevisit(level.playerpos.scale) == 6))
+            if ((r > ls)
+                &&
+                (getscalevisit(level.playerpos.scale) == 5)
+                ||
+                (getscalevisit(level.playerpos.scale) == 6))
+            {
                 finishlevel();
+            }
         }
         break;
     case e_Goal_Bedroom:
@@ -683,18 +693,21 @@ RenderRoom(int room_t, int room_f, int edge_t, int edge_f, bool parity,
     */
 
     //old portal
-    int     fromshape = level.rooms[room_f].shape;
-    GLfloat xa0       = shapes[fromshape][edge_f][0];
-    GLfloat ya0       = shapes[fromshape][edge_f][1];
-    GLfloat xa1       = shapes[fromshape][edge_f + 1][0];
-    GLfloat ya1       = shapes[fromshape][edge_f + 1][1];
+    THING   old_room   = level.rooms[room_f];
+    GLfloat from_shape = shapes[old_room.shape];
+    GLfloat xa0        = from_shape[edge_f][0];
+    GLfloat ya0        = from_shape[edge_f][1];
+    GLfloat xa1        = from_shape[edge_f + 1][0];
+    GLfloat ya1        = from_shape[edge_f + 1][1];
 
     //new portal
     int     toshape = level.rooms[room_t].shape;
-    GLfloat xb0     = shapes[toshape][edge_t][0];
-    GLfloat yb0     = shapes[toshape][edge_t][1];
-    GLfloat xb1     = shapes[toshape][edge_t + 1][0];
-    GLfloat yb1     = shapes[toshape][edge_t + 1][1];
+    GLfloat to_shape = shapes[new_room.shape];
+    GLfloat xb0     = to_shape[edge_t][0];
+    GLfloat yb0     = to_shape[edge_t][1];
+    GLfloat xb1     = to_shape[edge_t + 1][0];
+    GLfloat yb1     = to_shape[edge_t + 1][1];
+
     GLfloat a;
 
     if (parity)
@@ -711,12 +724,14 @@ RenderRoom(int room_t, int room_f, int edge_t, int edge_f, bool parity,
 
     glRotatef(a * (180.0 / Pi), 0.0f, 0.0f, 1.0f);
 
-    GLfloat s = level.deriveddata.roomratios[room_f][edge_f];
-    if (s != 1.0f) {
-        glScalef(s, s, 1);
+    GLfloat scale_factor = level.deriveddata.roomratios[room_f][edge_f];
+
+    if (scale_factor != 1.0f)
+    {
+        glScalef(scale_factor, scale_factor, 1);
     }
 
-    outers *= s;
+    outers *= scale_factor;
     glTranslatef(-xb1, -yb1, 0.0f);
 
 
@@ -755,15 +770,23 @@ RenderRoom(int room_t, int room_f, int edge_t, int edge_f, bool parity,
     GLfloat* curcolour;
 
     if (level.deriveddata.visited[room_t][getscaleexplore(outers)][globparity]) {
-        if (globparity) {
+        if (globparity)
+        {
             curcolour = &level.colourscheme.evenroomvisited[0];
-        } else {
+        }
+        else
+        {
             curcolour = &level.colourscheme.oddroomvisited[0];
         }
-    } else {
-        if (globparity) {
+    }
+    else
+    {
+        if (globparity)
+        {
             curcolour = &level.colourscheme.evenroomunvisited[0];
-        } else {
+        }
+        else
+        {
             curcolour = &level.colourscheme.oddroomunvisited[0];
         }
     }
@@ -772,7 +795,7 @@ RenderRoom(int room_t, int room_f, int edge_t, int edge_f, bool parity,
       Step 4: draw the room
     */
 
-    GLfloat alpha = sqrt(0.9f * min((depth / MAXDEPTH), ((MAXREALDEPTH - realdepth) / MAXREALDEPTH));
+    GLfloat alpha = sqrt(0.9f * min((depth / MAXDEPTH), ((MAXREALDEPTH - realdepth) / MAXREALDEPTH)));
 
     curcolour[3] = (level.colourscheme.roomtransparency ? alpha : 1.0f);
 
@@ -786,7 +809,9 @@ RenderRoom(int room_t, int room_f, int edge_t, int edge_f, bool parity,
     glCallList(level.displaylists.roomoutlines + room_t);
 
     if (level.entitydata.curEntityPositions[room_t].type != e_EmptyRoom) {
-        drawEntity(level.entitydata.curEntityPositions[room_t], (level.colourscheme.entitytransparency ? alpha : 1.0f), globparity);
+        drawEntity(level.entitydata.curEntityPositions[room_t],
+                   (level.colourscheme.entitytransparency ? alpha : 1.0f),
+                   globparity);
     }
 
     if ((level.playerpos.room == room_t) && (!level.colourscheme.noplayerdup)) {
@@ -797,7 +822,8 @@ RenderRoom(int room_t, int room_f, int edge_t, int edge_f, bool parity,
         //TODO: store player x,y vals in struct so can use vertex2fv
         glVertex2f(level.playerpos.x, level.playerpos.y);
 
-        glVertex2f(level.playerpos.x + cos(level.playerpos.dir) * (pl_s / (level.playerpos.scale)), level.playerpos.y + sin(level.playerpos.dir) * (pl_s / (level.playerpos.scale)));
+        glVertex2f(level.playerpos.x + cos(level.playerpos.dir) * (pl_s / (level.playerpos.scale)),
+                   level.playerpos.y + sin(level.playerpos.dir) * (pl_s / (level.playerpos.scale)));
         glEnd();
     }
 
@@ -835,7 +861,7 @@ void buildOutlines()
         glEndList();
     }
 
-    //Entities Draw
+    // Entities Draw
 
     level.displaylists.e_mlist = glGenLists(1);
 
@@ -849,8 +875,6 @@ void buildOutlines()
     glEnd();
     glEndList();
 
-
-
     level.displaylists.e_plist = glGenLists(1);
     glNewList(level.displaylists.e_plist, GL_COMPILE);
     glBegin(GL_QUADS);
@@ -861,23 +885,25 @@ void buildOutlines()
     glEnd();
     glEndList();
 
-
-    //Bedroom
+    // Bedroom
     level.displaylists.e_bedroomlist = glGenLists(1);
 
     glNewList(level.displaylists.e_bedroomlist, GL_COMPILE);
 
     for (int i = 0; i < SUBOBJECTCOUNT; i++)
     {
-        if (m_bedroom[i][0][0] > E)
+        if (m_bedroom[i][0][0] > E) {
             break;
+        }
 
         glBegin(GL_LINE_LOOP);
 
         for (int j = 0; j < POLYSIZE; j++)
         {
             if (m_bedroom[i][j][0] > E)
+            {
                 break;
+            }
 
             glVertex2f(m_bedroom[i][j][0], m_bedroom[i][j][1]);
         }
@@ -894,15 +920,17 @@ void buildOutlines()
 
     for (int i = 0; i < SUBOBJECTCOUNT; i++)
     {
-        if (m_bedroom2[i][0][0] > E)
+        if (m_bedroom2[i][0][0] > E) {
             break;
+        }
 
         glBegin(GL_LINE_LOOP);
 
         for (int j = 0; j < POLYSIZE; j++)
         {
-            if (m_bedroom2[i][j][0] > E)
+            if (m_bedroom2[i][j][0] > E) {
                 break;
+            }
 
             glVertex2f(m_bedroom2[i][j][0], m_bedroom2[i][j][1]);
         }
@@ -919,19 +947,18 @@ void buildOutlines()
 
     for (int i = 0; i < SUBOBJECTCOUNT; i++)
     {
-        if (m_bathroom[i][0][0] > E)
+        if (m_bathroom[i][0][0] > E) {
             break;
-
-        glBegin(GL_LINE_LOOP);
-
-        for (int j = 0; j < POLYSIZE; j++)
-        {
-            if (m_bathroom[i][j][0] > E)
-                break;
-
-            glVertex2f(m_bathroom[i][j][0], m_bathroom[i][j][1]);
         }
 
+        glBegin(GL_LINE_LOOP);
+        for (int j = 0; j < POLYSIZE; j++)
+        {
+            if (m_bathroom[i][j][0] > E) {
+                break;
+            }
+            glVertex2f(m_bathroom[i][j][0], m_bathroom[i][j][1]);
+        }
         glEnd();
     }
 
@@ -943,19 +970,19 @@ void buildOutlines()
 
     for (int i = 0; i < SUBOBJECTCOUNT; i++)
     {
-        if (m_table[i][0][0] > E)
+        if (m_table[i][0][0] > E) {
             break;
+        }
 
         glBegin(GL_LINE_LOOP);
-
         for (int j = 0; j < POLYSIZE; j++)
         {
-            if (m_table[i][j][0] > E)
+            if (m_table[i][j][0] > E) {
                 break;
+            }
 
             glVertex2f(m_table[i][j][0], m_table[i][j][1]);
         }
-
         glEnd();
     }
 
@@ -967,19 +994,19 @@ void buildOutlines()
 
     for (int i = 0; i < SUBOBJECTCOUNT; i++)
     {
-        if (m_table[i][0][0] > E)
+        if (m_table[i][0][0] > E) {
             break;
+        }
 
         glBegin(GL_LINE_LOOP);
-
         for (int j = 0; j < POLYSIZE; j++)
         {
-            if (m_flower[i][j][0] > E)
+            if (m_flower[i][j][0] > E) {
                 break;
+            }
 
             glVertex2f(m_flower[i][j][0], m_flower[i][j][1]);
         }
-
         glEnd();
     }
 
@@ -1033,12 +1060,13 @@ init_GL() {
     return (glGetError() != GL_NO_ERROR);
 }
 
-/*********
+/* ********
  * Set up the game
- **********/
+ * *********/
 
 bool
-init() {
+init()
+{
     editmode = false;
 
     episodeList.clear();
@@ -1047,7 +1075,8 @@ init() {
     getEpisodeData();
 
     //Initialize SDL
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+    {
         return false;
     }
 
@@ -1066,23 +1095,15 @@ init() {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 
-    if (FULLSCREEN) {
-        //Create Window
-        if (SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP,
-                             SDL_OPENGL|SDL_FULLSCREEN) == NULL) {
-            return false;
-        }
-    } else {
-        //Create Window
-        if (SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP,
-                             SDL_OPENGL/*|SDL_FULLSCREEN*/) == NULL) {
-            return false;
-        }
+    if (!set_video_mode(FULLSCREEN))
+    {
+        return false;
     }
 
     SDL_ShowCursor(SDL_DISABLE);
 
-    if (init_GL() == false) {
+    if (init_GL() == false)
+    {
         return false;
     }
 
@@ -1101,11 +1122,19 @@ init() {
     return true;
 }
 
+bool set_video_mode(bool isFullscreen)
+{
+    Uint32 fullscreen_flag = isFullscreen ? SDL_OPENGL|SDL_FULLSCREEN : SDL_OPENGL;
+    return SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, fullscreen_flag);
+}
+
 /* *************************
  * Called when quitting game
  * *************************/
 
-void clean_up() {
+void
+clean_up()
+{
     releasesound();
     SDL_Quit();
 }
@@ -1141,19 +1170,24 @@ generateShapeScales()
 void
 buildRoomRatios()
 {
-    for (int r = 0; r < ROOMCOUNT; r++) {
-        for (int e = 0; e < SHAPESIZE; e++) {
-            if (level.rooms[r].portal[e]) {
-                GLfloat ax = shapes[level.rooms[r].shape][e][0];
-                GLfloat ay = shapes[level.rooms[r].shape][e][1];
-                GLfloat bx = shapes[level.rooms[r].shape][e + 1][0];
-                GLfloat by = shapes[level.rooms[r].shape][e + 1][1];
+    for (int r = 0; r < ROOMCOUNT; r++)
+    {
+        for (int e = 0; e < SHAPESIZE; e++)
+        {
+            if (level.rooms[r].portal[e])
+            {
+                TODO shape = shapes[level.rooms[r].shape];
+                GLfloat ax = shape[e][0];
+                GLfloat ay = shape[e][1];
+                GLfloat bx = shape[e + 1][0];
+                GLfloat by = shape[e + 1][1];
 
                 int r2 = level.rooms[r].portaltoroom[e];
-                GLfloat cx = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e]][0];
-                GLfloat cy = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e]][1];
-                GLfloat dx = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e] + 1][0];
-                GLfloat dy = shapes[level.rooms[r2].shape][level.rooms[r].portaltoedge[e] + 1][1];
+                TODO r2something = shapes[level.rooms[r2].shape][level.rooms[r];
+                GLfloat cx = r2something.portaltoedge[e]][0];
+                GLfloat cy = r2something.portaltoedge[e]][1];
+                GLfloat dx = r2something.portaltoedge[e] + 1][0];
+                GLfloat dy = r2something.portaltoedge[e] + 1][1];
 
                 level.deriveddata.roomratios[r][e] = sqrt(lengthsq(bx - ax, by - ay) / lengthsq(dx - cx, dy - cy));
             }
@@ -1167,9 +1201,11 @@ buildRoomRatios()
 void
 countPortals()
 {
-    for (int i = 0; i < ROOMCOUNT; i++) {
+    for (int i = 0; i < ROOMCOUNT; i++)
+    {
         level.deriveddata.portalcount[i] = 0;
-        for (int j = shapesize[level.rooms[i].shape] - 1; j >= 0; j--) {
+        for (int j = shapesize[level.rooms[i].shape] - 1; j >= 0; j--)
+        {
             if (level.rooms[i].portal[j]) {
                 level.deriveddata.portalcount[i]++;
             }
@@ -1196,11 +1232,7 @@ initlevel()
     clearsizes();
 
     char blah[50];
-    if (!customchapter) {
-        sprintf(blah, "chapters/%s/%d.dat", curchapter.c_str(), l);
-    } else {
-        sprintf(blah, "custom/%s/%d.dat", curchapter.c_str(), l);
-    }
+    sprintf(blah, "custom/%s/%d.dat", (customchapter ? "custom" : "chapters"), curchapter.c_str(), l);
     readlevel(blah, level);
 
     level.playerstate.oldx          = level.playerpos.x;
@@ -1235,30 +1267,44 @@ initlevel()
 
     countPortals();
 
-    for (int i = 0; i < ROOMCOUNT; i++) {
-        for (int j = 0; j < 4; j++) {
-            for (int k = 0; k < 2; k++) {
+    for (int i = 0; i < ROOMCOUNT; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            for (int k = 0; k < 2; k++)
+            {
                 level.deriveddata.visited[i][j][k] = false;
             }
         }
     }
 
-    if (level.levelparams.exploreon) {
+    if (level.levelparams.exploreon)
+    {
         level.levelparams.scaleandparitymatter = level.levelparams.scalematters && level.levelparams.paritymatters;
+        TodoType visited_status = level.deriveddata.visited[level.playerpos.room];
 
-        if (level.levelparams.scaleandparitymatter) {
-            level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][!level.playerpos.par] = true;
-        } else if (level.levelparams.scalematters) {
-            level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][0] = true;
-            level.deriveddata.visited[level.playerpos.room][getscaleexplore(level.playerpos.scale)][1] = true;
-        } else if (level.levelparams.paritymatters) {
-            for (int i = 0; i < 5; i++) {
-                level.deriveddata.visited[level.playerpos.room][i][!level.playerpos.par] = true;
-            }
-        } else {
-            for (int i = 0; i < 5; i++) {
-                level.deriveddata.visited[level.playerpos.room][i][0] = true;
-                level.deriveddata.visited[level.playerpos.room][i][1] = true;
+        if (level.levelparams.scaleandparitymatter)
+        {
+            visited_status[getscaleexplore(level.playerpos.scale)][!level.playerpos.par] = true;
+        }
+        else if (level.levelparams.scalematters)
+        {
+            visited_status[getscaleexplore(level.playerpos.scale)][0] = true;
+            visited_status[getscaleexplore(level.playerpos.scale)][1] = true;
+        }
+        else
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                if (level.levelparams.paritymatters)
+                {
+                    visited_status[i][!level.playerpos.par] = true;
+                }
+                else
+                {
+                    visited_status[i][0] = true;
+                    visited_status[i][1] = true;
+                }
             }
         }
     }
@@ -1268,12 +1314,18 @@ initlevel()
 
     /* RUNTIME GENERATION END */
 
-    if (!editmode) {
+    if (editmode)
+    {
+        glClearColor(level.colourscheme.background[0],
+                     level.colourscheme.background[1],
+                     level.colourscheme.background[2],
+                     1.0f);
+        gamestate = gs_level;
+    }
+    else
+    {
         glClearColor(0, 0, 0, 1);
         gamestate = gs_interlude;
-    } else {
-        glClearColor(level.colourscheme.background[0], level.colourscheme.background[1], level.colourscheme.background[2], 1.0f);
-        gamestate = gs_level;
     }
 }
 
@@ -1281,8 +1333,11 @@ initlevel()
  * Restart level
  **********/
 
-void restartlevel() {
-    if (!editmode && !firstframe) {
+void
+restartlevel()
+{
+    if (!editmode && !firstframe)
+    {
         fadetoblack();
         initlevel();
     }
@@ -1292,33 +1347,44 @@ void restartlevel() {
  * Finish level
  **********/
 
-void finishlevel() {
-    if (editmode || firstframe || editorenabled) return;
+void
+finishlevel()
+{
+    if (editmode || firstframe || editorenabled)
+    {
+        return;
+    }
 
-    int current_level_save_status = savedata.completed[curtitleselection2][curlevel];
-    bool has_more_levels = curlevel < (episodecount - 1);
-    bool level_not_yet_completed = current_level_save_status != 1;
+    int  current_level_save_status = savedata.completed[curtitleselection2][curlevel];
+    bool has_more_levels           = curlevel < (episodecount - 1);
+    bool level_not_yet_completed   = current_level_save_status != 1;
 
-    if (!customchapter && level_not_yet_completed) {
+    if (!customchapter && level_not_yet_completed)
+    {
         current_level_save_status = 1;
         savesavedata();
     }
 
-    if (has_more_levels) {
+    fadetoblack();
+    if (has_more_levels)
+    {
         curlevel++;
-        fadetoblack();
         initlevel();
-    } else {
-        fadetoblack();
+    }
+    else
+    {
         wantquit = true;
         gamestate = gs_finishchapter;
     }
 }
 
 
-void levelinput() {
+void
+levelinput()
+{
     //If a key was pressed
-    if (event.type == SDL_KEYDOWN) {
+    if (event.type == SDL_KEYDOWN)
+    {
         //Adjust the velocity
         switch (event.key.keysym.sym) {
         case SDLK_UP:
@@ -1436,8 +1502,10 @@ void levelinput() {
             break;
 
         case SDLK_1:
-            if (editmode) {
-                if (editor.page == E_TextChooser) {
+            if (editmode)
+            {
+                if (editor.page == E_TextChooser)
+                {
                     break;
                 }
 
@@ -1449,8 +1517,10 @@ void levelinput() {
             break;
 
         case SDLK_2:
-            if (editmode) {
-                if (editor.page == E_TextChooser) {
+            if (editmode)
+            {
+                if (editor.page == E_TextChooser)
+                {
                     break;
                 }
                 curlevel = (curlevel + 1) % episodecount;
@@ -1460,7 +1530,8 @@ void levelinput() {
             }
             break;
         case SDLK_m:
-            if (editmode) {
+            if (editmode)
+            {
                 editor.allowmove=!editor.allowmove;
             }
 
@@ -1470,20 +1541,29 @@ void levelinput() {
 
         //deal with text input here as well
 
-        if (editmode && (editor.page == E_TextChooser)) {
-            if (event.key.keysym.sym == SDLK_BACKSPACE) {
+        if (editmode && (editor.page == E_TextChooser))
+        {
+            if (event.key.keysym.sym == SDLK_BACKSPACE)
+            {
                 level.introtext = level.introtext.substr(0, level.introtext.length() - 1);
-            } else if (event.key.keysym.sym == SDLK_RETURN) {
+            }
+            else if (event.key.keysym.sym == SDLK_RETURN)
+            {
                 level.introtext.resize((level.introtext.length() + 16) - ((level.introtext.length() + 16) % 16), ' ');
-            } else if (event.key.keysym.unicode < 0x80 && event.key.keysym.unicode > 0) {
-                char ch = (char)event.key.keysym.unicode;
+            }
+            else if (event.key.keysym.unicode < 0x80 && event.key.keysym.unicode > 0)
+            {
+                char ch = (char) event.key.keysym.unicode;
                 level.introtext.append(1, tolower(ch));
-                if (level.introtext.length() > 176) {
+                if (level.introtext.length() > 176)
+                {
                     level.introtext.resize(176);
                 }
             }
         }
-    } else if (event.type == SDL_KEYUP) { //If a key was released
+    }
+    else if (event.type == SDL_KEYUP)
+    { //If a key was released
         //Adjust the velocity
         switch (event.key.keysym.sym) {
         case SDLK_UP:
@@ -1518,9 +1598,11 @@ void levelinput() {
 
         case SDLK_TAB:
             {
-                if (editorenabled) {
+                if (editorenabled)
+                {
                     editmode = !editmode;
-                    if (editmode == true) {
+                    if (editmode == true)
+                    {
                         editor.realwallselected = 0;
                     }
                 }
@@ -1534,20 +1616,29 @@ void levelinput() {
             break;
 
         case SDLK_ESCAPE:
-            if (editorenabled) {
-                if (!editmode) {
+            if (editorenabled)
+            {
+                if (!editmode)
+                {
                     editmode = true;
-                } else {
-                    if (editor.page != E_FileStuff) {
+                }
+                else
+                {
+                    if (editor.page != E_FileStuff)
+                    {
                         editor.page = E_FileStuff;
-                        editor.itemselected = 1;                                //select "save"
-                    } else {
+                        editor.itemselected = 1; //select "save"
+                    }
+                    else
+                    {
                         //go to save as screen
                         wantquit = true;
                         gamestate = gs_title;
                     }
                 }
-            } else {
+            }
+            else
+            {
                 fadetoblack(false);
                 wantquit = true;
                 gamestate = gs_title;
@@ -1669,11 +1760,12 @@ void levelmove() {
 
     if (level.playerstate.rotatingr)
     {
-        level.playerpos.dir -= (level.playerpos.par * 2 - 1) * 0.06f;
+        level.playerpos.dir -= player_rotation_amount(level.playerpos);
     }
+
     if (level.playerstate.rotatingl)
     {
-        level.playerpos.dir += (level.playerpos.par * 2 - 1) * 0.06f;
+        level.playerpos.dir += player_rotation_amount(level.playerpos);
     }
 
     if (!editmode)
@@ -1681,13 +1773,14 @@ void levelmove() {
         if (level.levelparams.timeron)
         {
             level.levelparams.timer--;
-            if (level.levelparams.timer <= 0) finishlevel();
+            if (level.levelparams.timer <= 0) {
+                finishlevel();
+            }
         }
 
     }
-    if ((!editmode) || editor.allowmove)
+    if (!editmode || editor.allowmove)
     {
-
         for (int i = 0; i < ROOMCOUNT; i++)
         {
             if (level.entitydata.curEntityPositions[i].type != e_EmptyRoom)
@@ -1697,6 +1790,12 @@ void levelmove() {
         }
     }
 
+}
+
+float
+player_rotation_amount(player_position)
+{
+    return ((player_position.par * 2) - 1) * 0.06f;
 }
 
 
@@ -1739,11 +1838,22 @@ void levelshow()
 
     glTranslatef(0.0f, 0.0f, 0.1f);
 
-    for (int i = shapesize[level.rooms[level.playerpos.room].shape] - 1; i >= 0; i--)
-        if (level.rooms[level.playerpos.room].portal[i])
+    ToddoType current_room = level.rooms[level.playerpos.room];
+    for (int i = shapesize[current_room.shape] - 1; i >= 0; i--)
+    {
+        if (current_room.portal[i])
         {
-            RenderRoom(level.rooms[level.playerpos.room].portaltoroom[i], level.playerpos.room, level.rooms[level.playerpos.room].portaltoedge[i], i, level.rooms[level.playerpos.room].portalparity[i], (level.playerpos.par) ^ level.rooms[level.playerpos.room].portalparity[i], MAXDEPTH / (level.deriveddata.portalcount[level.playerpos.room]), 0, level.playerpos.scale);
+            RenderRoom(current_room.portaltoroom[i],
+                       level.playerpos.room,
+                       current_room.portaltoedge[i],
+                       i,
+                       current_room.portalparity[i],
+                       (level.playerpos.par) ^ current_room.portalparity[i],
+                       MAXDEPTH / (level.deriveddata.portalcount[level.playerpos.room]),
+                       0,
+                       level.playerpos.scale);
         }
+    }
 
     /*
       choose room color
@@ -1787,21 +1897,25 @@ void levelshow()
     //TODO: store player x,y vals in struct so can use vertex2fv
     glVertex2f(level.playerpos.x, level.playerpos.y);
 
-    glVertex2f(level.playerpos.x + cos(level.playerpos.dir) * (pl_s / (level.playerpos.scale)), level.playerpos.y + sin(level.playerpos.dir) * (pl_s / (level.playerpos.scale)));
+    glVertex2f(level.playerpos.x + cos(level.playerpos.dir) * (pl_s / (level.playerpos.scale)),
+               level.playerpos.y + sin(level.playerpos.dir) * (pl_s / (level.playerpos.scale)));
     glEnd();
 
 
     /*
-      if you have the editor window open, and are in a mode where you can select walls, then draw the selection:
-    */
+     * if you have the editor window open, and are in a mode where you can
+     * select walls, then draw the selection:
+     */
 
     if (editmode && (editor.page == E_RoomAdder || editor.page == E_PortalMode))
     {
         glColor3f(0, 0.7, 0);
         glBegin(GL_TRIANGLES);
         glVertex2f(level.playerpos.x, level.playerpos.y);
-        glVertex2f(shapes[level.rooms[level.playerpos.room].shape][editor.realwallselected][0], shapes[level.rooms[level.playerpos.room].shape][editor.realwallselected][1]);
-        glVertex2f(shapes[level.rooms[level.playerpos.room].shape][editor.realwallselected + 1][0], shapes[level.rooms[level.playerpos.room].shape][editor.realwallselected + 1][1]);
+        glVertex2f(shapes[level.rooms[level.playerpos.room].shape][editor.realwallselected][0],
+                   shapes[level.rooms[level.playerpos.room].shape][editor.realwallselected][1]);
+        glVertex2f(shapes[level.rooms[level.playerpos.room].shape][editor.realwallselected + 1][0],
+                   shapes[level.rooms[level.playerpos.room].shape][editor.realwallselected + 1][1]);
         glEnd();
     }
 
@@ -1871,15 +1985,24 @@ bool draw_intro()
     static GLfloat u;
     static GLfloat v = 1;
 
-    if (t < 1) {
+    if (t < 1)
+    {
         t += 0.02;
-    } else {
-        if (u < 1.5) {
+    }
+    else
+    {
+        if (u < 1.5)
+        {
             u += 0.02;
-        } else {
-            if (v > 0) {
+        }
+        else
+        {
+            if (v > 0)
+            {
                 v -= 0.04;
-            } else {
+            }
+            else
+            {
                 return false;
             }
         }
@@ -2071,7 +2194,8 @@ draw_editmode(bool resetright, bool resetleftbounds)
     static int currange3_begin = 0;
     static int currange3_end = 10;
 
-    if (resetlistbounds) {
+    if (resetlistbounds)
+    {
         curtitleselection2 = (episodeList.size() > 0) ? 0 : -1;
 
         curtitleselection3 = 0;
@@ -2092,18 +2216,24 @@ draw_editmode(bool resetright, bool resetleftbounds)
 
 
     {
-        if (curtitleselection2 < currange2_begin && curtitleselection2 >= 0) {
+        if (curtitleselection2 < currange2_begin && curtitleselection2 >= 0)
+        {
             currange2_begin = std::max(curtitleselection2, 0);
             currange2_end = std::min(std::max(curtitleselection2, 0) + 9, (int)customEpisodeList.size());
-        } else if (curtitleselection2 >= currange2_end) {
+        }
+        else if (curtitleselection2 >= currange2_end)
+        {
             currange2_begin = std::max(std::max(curtitleselection2, 0) - 8, 0);
-            currange2_end = std::min(std::max(std::max(curtitleselection2, 0) - 8, 0) + 9, (int) customEpisodeList.size());
+            currange2_end = std::min(std::max(std::max(curtitleselection2, 0) - 8,
+                                              0) + 9,
+                                     (int) customEpisodeList.size());
         }
 
 
-        ///need to be careful about these I think...reset frequently...
+        // need to be careful about these I think...reset frequently...
 
-        if (curtitleselection2 >= 0) {
+        if (curtitleselection2 >= 0)
+        {
             //blah ok:
             if (currange3_end > customEpisodeList[curtitleselection2].num_episodes
                 ||
@@ -2128,8 +2258,10 @@ draw_editmode(bool resetright, bool resetleftbounds)
         }
     }
 
-    if (resetleftbounds) {
-        if (currange2_begin == 0) {
+    if (resetleftbounds)
+    {
+        if (currange2_begin == 0)
+        {
             currange2_end = std::min(std::max(std::max(curtitleselection2, 0) - 8, 0) + 9, (int)customEpisodeList.size());
         }
         resetleftbounds = false;
@@ -2162,11 +2294,7 @@ draw_editmode(bool resetright, bool resetleftbounds)
         glColor4f(1, 1, 1, titletick);
 
         if (curtitleselection2 >= 0) {
-            if (saveasmode) {
-                print_straight_text("save episode as");
-            } else {
-                print_straight_text("select episode");
-            }
+            print_straight_text(saveasmode ? "save episode as" : "select episode");
         } else {
             print_straight_text("enter name");
             glTranslatef(0, -0.15, 0);
@@ -2200,16 +2328,26 @@ draw_editmode(bool resetright, bool resetleftbounds)
                  ||
                  (curtitleselection3 == currange3_end - 1)))
             {
-                if ((currange3_end - currange3_begin) >= 10) loopmin++;
-            } else if (afterselection3 || beforeselection3) {
-                if (currange3_end - currange3_begin >= 10) loopmax--;
+                if ((currange3_end - currange3_begin) >= 10)
+                {
+                    loopmin++;
+                }
+            }
+            else if (afterselection3 || beforeselection3)
+            {
+                if (currange3_end - currange3_begin >= 10)
+                {
+                    loopmax--;
+                }
             }
 
-            for (int i = loopmin; i < loopmax; i++) {
+            for (int i = loopmin; i < loopmax; i++)
+            {
                 glTranslatef(0, -0.15, 0);
 
 
-                if (i == 0 && beforeselection3) {
+                if (i == 0 && beforeselection3)
+                {
                     glPushMatrix();
 
                     glTranslatef(0.05f, 0.0f, 0.0f);
@@ -2231,9 +2369,12 @@ draw_editmode(bool resetright, bool resetleftbounds)
                     glTranslatef(0.0f, -0.15f, 0.0f);
                 }
 
-                if (i == curtitleselection3 && (!afterselection3) && (!beforeselection3)) {
+                if (i == curtitleselection3 && !afterselection3 && !beforeselection3)
+                {
                     glColor3f(0.3f, 0.3f, 0.3f);
-                } else {
+                }
+                else
+                {
                     glColor3f(0.1f, 0.1f, 0.1f);
                 }
 
@@ -2243,15 +2384,20 @@ draw_editmode(bool resetright, bool resetleftbounds)
                 glVertex2f(0.7f, -0.065f);
                 glVertex2f(0.7f, 0.025f);
                 glEnd();
-                if (i == curtitleselection3 && (!afterselection3) && (!beforeselection3))
+                if (i == curtitleselection3 && !afterselection3 && !beforeselection3)
+                {
                     glColor3f(1.0f, 1.0f, 1.0f);
+                }
                 else
+                {
                     glColor3f(0.5f, 0.5f, 0.5f);
+                }
 
                 //13 CHARACTER LIMIT ON CHAPTER NAMES
                 print_straight_text("episode " + stringify(i));
 
-                if (i == curtitleselection3 && afterselection3) {
+                if (i == curtitleselection3 && afterselection3)
+                {
                     glTranslatef(0.0f, -0.15f, 0.0f);
 
                     glPushMatrix();
@@ -2296,13 +2442,19 @@ draw_editmode(bool resetright, bool resetleftbounds)
             glPushMatrix();
             glTranslatef(0.4f, 0.7f, 0.0f);
             glColor3f(0.5f, 0.5f, 0.5f);
-            if (curtitleselection2 >= 0) {
-                if (saveasmode) {
+            if (curtitleselection2 >= 0)
+            {
+                if (saveasmode)
+                {
                     print_straight_text("save episode as");
-                } else {
+                }
+                else
+                {
                     print_straight_text("select episode");
                 }
-            } else {
+            }
+            else
+            {
                 print_straight_text("enter name");
             }
 
@@ -2310,8 +2462,10 @@ draw_editmode(bool resetright, bool resetleftbounds)
 
             glTranslatef(0.05f, 0.0f, 0.0f);
             // make the 10 a min (chaptercount,10)
-            if (curtitleselection2 >= 0) {
-                for (int i = 0; i < min(10, customEpisodeList[curtitleselection2].num_episodes); i++) {
+            if (curtitleselection2 >= 0)
+            {
+                for (int i = 0; i < min(10, customEpisodeList[curtitleselection2].num_episodes); i++)
+                {
                     glTranslatef(0.0f, -0.15f, 0.0f);
 
                     glColor3f(0.1f, 0.1f, 0.1f);
@@ -2356,9 +2510,12 @@ draw_editmode(bool resetright, bool resetleftbounds)
         glTranslatef(0.05f, 0.0f, 0.0f);
 
         glTranslatef(0.0f, -0.15f, 0.0f);
-        if (curtitleselection2 == -1) {
+        if (curtitleselection2 == -1)
+        {
             glColor3f(1, 1, 1);
-        } else {
+        }
+        else
+        {
             glColor3f(0.3, 0.3, 0.3);
         }
 
@@ -2369,9 +2526,12 @@ draw_editmode(bool resetright, bool resetleftbounds)
         {
             glTranslatef(0, -0.15, 0);
 
-            if (i == curtitleselection2) {
+            if (i == curtitleselection2)
+            {
                 glColor3f(0.3, 0.3, 0.3);
-            } else {
+            }
+            else
+            {
                 glColor3f(0.1, 0.1, 0.1);
             }
 
@@ -2381,9 +2541,12 @@ draw_editmode(bool resetright, bool resetleftbounds)
             glVertex2f(0.7f, -0.065);
             glVertex2f(0.7f, 0.025);
             glEnd();
-            if (i == curtitleselection2) {
+            if (i == curtitleselection2)
+            {
                 glColor3f(1, 1, 1);
-            } else {
+            }
+            else
+            {
                 glColor3f(0.5, 0.5, 0.5);
             }
 
@@ -2406,7 +2569,17 @@ draw_editmode(bool resetright, bool resetleftbounds)
     SDL_GL_SwapBuffers();
 }
 
+bool
+is_new_game(TSO tso)
+{
+    return tso == ts_newgamechapterselect || tso == ts_newgameselect;
+}
 
+vector<EpisodeDat>
+get_episode_list(TSO tso)
+{
+    return is_new_game(tso) ? episodeList : customEpisodeList;
+}
 
 void draw_title()
 {
@@ -2416,8 +2589,9 @@ void draw_title()
     static int currange3_begin = 0;
     static int currange3_end = 10;
 
-    if (resetlistbounds) {
-        vector<EpisodeDat> episode_list = (tso == ts_newgamechapterselect || tso == ts_newgameselect) ? episodeList : customEpisodeList;
+    if (resetlistbounds)
+    {
+        vector<EpisodeDat> episode_list = get_episode_list(tso);
         curtitleselection3 = 0;
         currange2_begin    = 0;
         currange3_begin    = 0;
@@ -2427,7 +2601,7 @@ void draw_title()
 
     resetlistbounds = false;
 
-    if ((tso == ts_newgamechapterselect) || (tso == ts_newgameselect))
+    if (is_new_game(tso))
     {
         if (curtitleselection2 < currange2_begin)
         {
@@ -2440,7 +2614,9 @@ void draw_title()
 
         // need to be careful about these I think...reset frequently...
         // blah ok:
-        if ((currange3_end > episodeList[curtitleselection2].num_episodes) || ((currange3_end - currange3_begin < 10) && (currange3_end < episodeList[curtitleselection2].num_episodes)))
+        if ((currange3_end > episodeList[curtitleselection2].num_episodes)
+            ||
+            ((currange3_end - currange3_begin < 10) && (currange3_end < episodeList[curtitleselection2].num_episodes)))
         {
             curtitleselection3 = 0;
             currange3_begin = 0;
@@ -2476,7 +2652,9 @@ void draw_title()
         ///need to be careful about these I think...reset frequently...
 
         //blah ok:
-        if ((currange3_end > customEpisodeList[curtitleselection2].num_episodes) || ((currange3_end - currange3_begin < 10) && (currange3_end < customEpisodeList[curtitleselection2].num_episodes)))
+        if ((currange3_end > customEpisodeList[curtitleselection2].num_episodes)
+            ||
+            ((currange3_end - currange3_begin < 10) && (currange3_end < customEpisodeList[curtitleselection2].num_episodes)))
         {
             curtitleselection3 = 0;
             currange3_begin = 0;
@@ -2499,11 +2677,12 @@ void draw_title()
 
 
     if (titletick < 1)
+    {
         titletick += 0.01;
+    }
 
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
-
 
 
     switch (tso)
@@ -2533,7 +2712,9 @@ void draw_title()
             glTranslatef(0.0f, -0.15f, 0.0f);
 
             if (i == curtitleselection3)
+            {
                 glColor3f(0.3f, 0.3f, 0.3f);
+            }
             else if (tso == ts_newgamechapterselect && !savedata.canplay[curtitleselection2][i])
             {
                 glColor3f(0.0f, 0.0f, 0.0f);
@@ -2563,15 +2744,13 @@ void draw_title()
         }
         glPopMatrix();
 
-
-
         glPopMatrix();
 
         glTranslatef(-0.7f, 0.0f, 0.0f);
 
     case ts_newgameselect:
     case ts_newcustomgameselect:
-        if ((tso == ts_newgameselect) || (tso == ts_newcustomgameselect))
+        if (is_new_game(tso))
         {
             glTranslatef(-0.31f, 0.0f, 0.0f);
 
@@ -2669,7 +2848,7 @@ void draw_title()
 
         glPushMatrix();
         glTranslatef(0.4f, 0.7f, 0.0f);
-        if ((tso == ts_newgameselect) || (tso == ts_newcustomgameselect))
+        if (is_new_game(tso))
         {
             glColor4f(1.0f, 1.0f, 1.0f, titletick);
         }
@@ -2689,11 +2868,17 @@ void draw_title()
             glTranslatef(0.0f, -0.15f, 0.0f);
 
             if (i == curtitleselection2)
+            {
                 glColor3f(0.3f, 0.3f, 0.3f);
+            }
             else if (tso == ts_newcustomgameselect || tso == ts_newcustomgamechapterselect || savedata.canplay[i][0])
+            {
                 glColor3f(0.1f, 0.1f, 0.1f);
+            }
             else
+            {
                 glColor3f(0.0f, 0.0f, 0.0f);
+            }
 
             glBegin(GL_QUADS);
             glVertex2f(-0.05f, 0.025f);

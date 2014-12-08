@@ -1,39 +1,39 @@
-
 //The level.levelparams.timer
 class Timer
-	{
-    private:
-		//The clock time when the level.levelparams.timer started
-        int startTicks;
-		
-		//The ticks stored when the level.levelparams.timer was paused
-        int pausedTicks;
-		
-		//The level.levelparams.timer status
-        bool paused;
-        bool started;
-		
-    public:
-		//Initializes variables
-        Timer();
-		
-		//The various clock actions
-        void start();
-        void stop();
-        void pause();
-        void unpause();
-		
-		//Gets the level.levelparams.timer's time
-        int get_ticks();
-		
-		//Checks the status of the level.levelparams.timer
-        bool is_started();
-        bool is_paused();
-	};
+{
+private:
+    //The clock time when the level.levelparams.timer started
+    int startTicks;
+
+    //The ticks stored when the level.levelparams.timer was paused
+    int pausedTicks;
+
+    //The level.levelparams.timer status
+    bool paused;
+    bool started;
+
+public:
+    // Initializes variables
+    Timer();
+
+    // The various clock actions
+    void start();
+    void stop();
+    void pause();
+    void unpause();
+
+    // Gets the level.levelparams.timer's time
+    int get_ticks();
+
+    // Checks the status of the level.levelparams.timer
+    bool is_started();
+    bool has_started();
+    bool is_paused();
+};
 
 Timer::Timer()
 {
-	//Initialize the variables
+    //Initialize the variables
     startTicks = 0;
     pausedTicks = 0;
     paused = false;
@@ -43,13 +43,13 @@ Timer::Timer()
 
 void Timer::start()
 {
-	//Start the level.levelparams.timer
+    // Start the level.levelparams.timer
     started = true;
-	
-	//Unpause the level.levelparams.timer
+
+    // Unpause the level.levelparams.timer
     paused = false;
-	
-	//Get the current clock time
+
+    // Get the current clock time
     startTicks = SDL_GetTicks();
 }
 
@@ -57,23 +57,23 @@ void Timer::start()
 
 void Timer::stop()
 {
-	//Stop the level.levelparams.timer
+    //Stop the level.levelparams.timer
     started = false;
-	
-	//Unpause the level.levelparams.timer
+
+    //Unpause the level.levelparams.timer
     paused = false;
 }
 
 
 void Timer::pause()
 {
-	//If the level.levelparams.timer is running and isn't already paused
-    if( ( started == true ) && ( paused == false ) )
+    // If the level.levelparams.timer is running and isn't already paused
+    if (started && !paused)
     {
-		//Pause the level.levelparams.timer
+        // Pause the level.levelparams.timer
         paused = true;
-		
-		//Calculate the paused ticks
+
+        // Calculate the paused ticks
         pausedTicks = SDL_GetTicks() - startTicks;
     }
 }
@@ -81,16 +81,14 @@ void Timer::pause()
 
 void Timer::unpause()
 {
-	//If the level.levelparams.timer is paused
-    if( paused == true )
+    //If the level.levelparams.timer is paused
+    if (paused)
     {
-		//Unpause the level.levelparams.timer
+        // Unpause the level.levelparams.timer
         paused = false;
-		
-		//Reset the starting ticks
+        //Reset the starting ticks
         startTicks = SDL_GetTicks() - pausedTicks;
-		
-		//Reset the paused ticks
+        //Reset the paused ticks
         pausedTicks = 0;
     }
 }
@@ -98,23 +96,20 @@ void Timer::unpause()
 
 int Timer::get_ticks()
 {
-	//If the level.levelparams.timer is running
-    if( started == true )
+    // If the level.levelparams.timer is running
+    if (started)
     {
-		//If the level.levelparams.timer is paused
-        if( paused == true )
-        {
-			//Return the number of ticks when the level.levelparams.timer was paused
+        // If the level.levelparams.timer is paused
+        if (paused) {
+            // Return the number of ticks when the level.levelparams.timer was paused
             return pausedTicks;
-        }
-        else
-        {
-			//Return the current time minus the start time
+        } else {
+            // Return the current time minus the start time
             return SDL_GetTicks() - startTicks;
         }
     }
-	
-	//If the level.levelparams.timer isn't running
+
+    // If the level.levelparams.timer isn't running
     return 0;
 }
 
@@ -124,9 +119,13 @@ bool Timer::is_started()
     return started;
 }
 
+bool Timer::has_started()
+{
+    return started;
+}
+
 
 bool Timer::is_paused()
 {
     return paused;
 }
-

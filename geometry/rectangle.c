@@ -13,9 +13,10 @@
  * │          │
  * └────────p2
  */
-struct Rectangle {
-    Point p1;
-    Point p2;
+struct Rectangle
+{
+    Point origin;
+    Point size;
 };
 
 Rectangle
@@ -30,8 +31,20 @@ rectangle_from_SDL_Rect(SDL_Rect rect)
     return new_rectangle(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
 }
 
+SDL_Rect
+SDL_Rect_from_rectangle(Rectangle rectangle)
+{
+    SDL_Rect rect;
+    rect.x = rectangle.p1.x;
+    rect.y = rectangle.p1.y;
+    rect.w = rectangle.p2.x - rectangle.p1.x;
+    rect.h = rectangle.p2.y - rectangle.p1.y;
+    return rect;
+}
+
 bool
-point_is_within_rectangle(Point point, Rectangle rectangle) {
+point_is_within_rectangle(Point point, Rectangle rectangle)
+{
     return (point_is_within_rectangle_width(point, rectangle) &&
             point_is_within_rectangle_height(point, rectangle));
 }

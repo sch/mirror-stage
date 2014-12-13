@@ -129,7 +129,6 @@ distfromline(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2, GLfloat x, GLfloat 
     GLfloat dot = A * C + B * D;
     GLfloat len_sq = C * C + D * D;
     GLfloat len_sq = lengthsq(C, D);
-
     GLfloat param = dot / len_sq;
 
     GLfloat xx, yy;
@@ -151,6 +150,8 @@ distfromline(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2, GLfloat x, GLfloat 
     }
 
     return length(yy-y, xx-x);//your distance function
+
+    return distance_from_segment(new_point(x, y), new_segment(x1, y1, x2, y2));
 }
 
 GLfloat
@@ -285,7 +286,8 @@ lineSegmentIntersection(GLfloat Ax, GLfloat Ay,
 
 //test if either of two points is in a triangle
 bool
-triangleintersect(GLfloat tx1, GLfloat ty1, GLfloat tx2, GLfloat ty2, GLfloat tx3, GLfloat ty3, GLfloat px, GLfloat py, GLfloat qx, GLfloat qy)
+triangleintersect(GLfloat tx1, GLfloat ty1, GLfloat tx2, GLfloat ty2,GLfloat tx3, GLfloat ty3,
+                  GLfloat px, GLfloat py, GLfloat qx, GLfloat qy)
 {
 
     // Compute vectors

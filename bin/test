@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# set +x
+
+gcc -std=c99 -o bin/test_suite test/geometry/test_rectangle.c
+
+./bin/test_suite

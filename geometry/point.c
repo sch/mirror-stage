@@ -1,82 +1,79 @@
-#ifdef __APPLE__
-#include <SDL/SDL.h>
-#include <SDL/SDL_opengl.h>
-#else
-#include <SDL.h>
-#include <SDL_opengl.h>
-#endif
-
+#include <stdlib.h>
 #include <math.h>
+#include "../moremath.c"
 
-struct GL_Point {
-    GLfloat x;
-    GLfloat y;
+struct Point {
+    double x;
+    double y;
 };
 
-GLfloat
-point_width(GL_Point a, GL_Point b)
+struct Point
+new_point(double x, double y)
 {
-    return abs(point_dx(a, b));
+    struct Point point;
+    point.x = x;
+    point.y = y;
+    return point;
 }
 
-GLfloat
-point_height(GL_Point a, GL_Point b)
-{
-    return abs(point_dy(a, b));
-}
-
-GLfloat
-point_dx(GL_Point a, GL_Point b)
+double
+point_dx(struct Point a, struct Point b)
 {
     return a.x - b.x;
 }
 
-GLfloat
-point_dy(GL_Point a, GL_Point b)
+double
+point_dy(struct Point a, struct Point b)
 {
     return a.y - b.y;
 }
 
-GLfloat
-point_square_distance(GL_Point a, GL_Point b)
+double
+point_width(struct Point a, struct Point b)
 {
-    return square_distance(width(a, b), height(a, b));
+    return abs(point_dx(a, b));
 }
 
-GLfloat
-point_distance(GL_Point a, GL_Point b)
+double
+point_height(struct Point a, struct Point b)
 {
-    return hypot(width(a, b), height(a, b));
+    return abs(point_dy(a, b));
 }
 
-GL_Point
-new_point(GLfloat x, GLfloat y)
+double
+point_distance(struct Point a, struct Point b)
 {
-    return GL_Point {x, y};
+    return hypot(point_width(a, b), point_height(a, b));
 }
 
-GL_Point
-sum_points(GL_Point a, GL_Point b)
+double
+point_square_distance(struct Point a, struct Point b)
+{
+    return square_distance(point_width(a, b), point_height(a, b));
+}
+
+struct Point
+sum_points(struct Point a, struct Point b)
 {
     return new_point(a.x + b.x, a.y + b.y);
 }
 
-GL_Point
-midpoint(GL_Point a, GL_Point b)
+struct Point
+midpoint(struct Point a, struct Point b)
 {
-    GLfloat x = (a.x + b.x) / 2;
-    GLfloat y = (a.y + b.y) / 2;
+    double x = (a.x + b.x) / 2;
+    double y = (a.y + b.y) / 2;
     return new_point(x, y);
 }
 
 double
-point_dot_product(GL_Point a, GL_point b)
+point_dot_product(struct Point a, struct Point b)
 {
     return dot_product(a.x, a.y, b.x, b.y);
 }
 
 double
-point_cross_product(GL_Point a, GL_point b)
+points_slope(struct Point a, struct Point b)
 {
-    return cross_product(a.x, a.y, b.x, b.y);
+    return (b.y - a.y) / (b.x - a.x);
 }
